@@ -854,60 +854,168 @@
 
   function parseCostco(fn, txt) {
     const date = parseDate(fn, txt);
-    const location = (txt.match(/([A-Z]+\s+#\d+)/) || [])[1] || 'Costco Warehouse';
-    const card = (txt.match(/X+(\d{4})/) || [])[1];
+    const isOnline = /costco\.com|order number|online order|shipping/i.test(txt) && !/whse:/i.test(txt);
+    const location = isOnline ? 'Costco.com' : ((txt.match(/([A-Z]+\s+#\d+)/) || [])[1] || 'Costco Warehouse');
+    const card = (txt.match(/(?:X+|\*+|ending in\s*)(\d{4})/i) || [])[1];
     const payment = card ? `Card ending in ${card}` : 'Costco Visa';
     const items = []; let savCalc = 0;
-    for (const line of txt.split('\n').map(l => l.trim()).filter(Boolean)) {
+    const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
       const dm = line.match(/^\d+\s+\/\d+\s+([\d.]+)-$/);
       if (dm) {
         const d = parseFloat(dm[1]); savCalc += d;
         if (items.length) { const p = items[items.length-1]; p.total = Math.max(0, +(p.total - d).toFixed(2)); p.discount = +((p.discount||0)+d).toFixed(2); }
         continue;
       }
+      // Standard warehouse single-line format: SKU DESC PRICE
       const im = line.match(/^(\d{4,8})\s+(.+?)\s+([\d,]+\.\d{2})\s*[YNFE]?$/);
       if (im) {
         const sku = im[1], desc = im[2].replace(/\*/g,'').trim(), total = parseFloat(im[3].replace(/,/g,''));
         items.push({ desc, sku, qtyLabel: 'Qty 1', unitPrice: total, total, discount: 0, category: catItem(desc, 'Costco') });
+        continue;
+      }
+      // Costco.com online format: Item # 123456 or SKU on its own line, with $price nearby
+      const onlineItem = line.match(/^(?:Item\s*#?\s*|#)(\d{5,8})\b/i);
+      if (onlineItem) {
+        const sku = onlineItem[1];
+        const desc = (lines[i-1] && !/order|date|qty|price|subtotal|tax|total|\$/i.test(lines[i-1])) ? lines[i-1] : (lines[i+1] || 'Costco.com Item');
+        let price = 0;
+        for (let j = i; j <= Math.min(i + 4, lines.length - 1); j++) {
+          const pm = lines[j].match(/^\$([\d,]+\.\d{2})$/);
+          if (pm) { price = parseFloat(pm[1].replace(/,/g, '')); break; }
+        }
+        if (price > 0) {
+          items.push({ desc: desc.trim(), sku, qtyLabel: 'Qty 1', unitPrice: price, total: price, discount: 0, category: catItem(desc, 'Costco') });
+        }
       }
     }
-    const total = parseFloat(((txt.match(/\*{4}\s*TOTAL\s+([\d,.]+)/i) || txt.match(/TOTAL\s+([\d,.]+)/i) || [])[1] || '0').replace(/,/g,'')) || items.reduce((s,i)=>s+i.total,0);
-    const subtotal = parseFloat(((txt.match(/SUBTOTAL\s+([\d,.]+)/i) || [])[1] || total).toString().replace(/,/g,''));
-    const tax = parseFloat(((txt.match(/TAX\s+([\d,.]+)/i) || [])[1] || '0').replace(/,/g,''));
-    const savings = parseFloat(((txt.match(/Instant Savings\s+\$?([\d,.]+)/i) || [])[1] || savCalc).toString().replace(/,/g,''));
-    return { id: fn, filename: fn, store: 'Costco', date, orderId: fn.replace(/\.pdf$/i,''), location, payment, subtotal, savings, tax, total, items };
+
+    // Multi-line or inline total extraction
+    let total = 0;
+    const totInline = txt.match(/(?:\*{4}\s*TOTAL|Order Total|Grand Total|TOTAL)\s*:?\s*\$?([\d,]+\.\d{2})/i);
+    if (totInline) total = parseFloat(totInline[1].replace(/,/g, ''));
+    else {
+      const totIdx = lines.findIndex(l => /^(?:\*{4}\s*)?(?:TOTAL|Order Total|Grand Total):?$/i.test(l));
+      if (totIdx >= 0 && lines[totIdx + 1]) {
+        const pm = lines[totIdx + 1].match(/^\$?([\d,]+\.\d{2})$/);
+        if (pm) total = parseFloat(pm[1].replace(/,/g, ''));
+      }
+    }
+    if (!total) total = items.reduce((s,i)=>s+i.total,0);
+
+    let subtotal = total;
+    const subInline = txt.match(/SUBTOTAL\s*:?\s*\$?([\d,]+\.\d{2})/i);
+    if (subInline) subtotal = parseFloat(subInline[1].replace(/,/g, ''));
+    else {
+      const subIdx = lines.findIndex(l => /^SUBTOTAL:?$/i.test(l));
+      if (subIdx >= 0 && lines[subIdx + 1]) {
+        const pm = lines[subIdx + 1].match(/^\$?([\d,]+\.\d{2})$/);
+        if (pm) subtotal = parseFloat(pm[1].replace(/,/g, ''));
+      }
+    }
+
+    let tax = 0;
+    const taxInline = txt.match(/(?:Estimated Tax|Sales Tax|TAX)\s*:?\s*\$?([\d,]+\.\d{2})/i);
+    if (taxInline) tax = parseFloat(taxInline[1].replace(/,/g, ''));
+    else {
+      const taxIdx = lines.findIndex(l => /^(?:Estimated Tax|Sales Tax|TAX):?$/i.test(l));
+      if (taxIdx >= 0 && lines[taxIdx + 1]) {
+        const pm = lines[taxIdx + 1].match(/^\$?([\d,]+\.\d{2})$/);
+        if (pm) tax = parseFloat(pm[1].replace(/,/g, ''));
+      }
+    }
+
+    const savings = parseFloat(((txt.match(/Instant Savings\s*:?\s*-?\$?([\d,.]+)/i) || [])[1] || savCalc).toString().replace(/,/g,''));
+    const orderId = (txt.match(/Order Number\s*:?\s*(\d{6,14})/i) || [])[1] || fn.replace(/\.pdf$/i,'');
+
+    if (!items.length && total > 0) {
+      const cleanName = fn.replace(/\.pdf$/i, '').replace(/^20\d{2}-\d{2}-\d{2}[-\s]*/i, '').trim();
+      items.push({ desc: cleanName || 'Costco Purchase', sku: '', qtyLabel: 'Qty 1', unitPrice: +(total - tax).toFixed(2), total: +(total - tax).toFixed(2), discount: 0, category: catItem(cleanName, 'Costco') });
+    }
+    return { id: fn, filename: fn, store: 'Costco', date, orderId, location, payment, subtotal, savings, tax, total, items };
   }
 
   function parseAmazon(fn, txt) {
     const date = parseDate(fn, txt);
-    const orderId = (txt.match(/Order #\s*(\d{3}-\d{7}-\d{7})/i) || [])[1] || fn.replace(/\.pdf$/i,'');
-    const l4 = (txt.match(/(?:Visa|Mastercard|Amex|Discover|Card)[^\d\n]{0,15}(\d{4})/i) || [])[1];
+    const orderId = (txt.match(/Order #\s*([A-Z0-9]{3}-\d{7}-\d{7})/i) || fn.match(/([A-Z0-9]{3}-\d{7}-\d{7})/i) || [])[1] || fn.replace(/\.pdf$/i,'');
+    const l4 = (txt.match(/(?:Visa|Mastercard|Amex|Discover|Card|\*{4})\s*(\d{4})/i) || [])[1];
     const payment = l4 ? `Card ending in ${l4}` : (/Amazon Gift Card/i.test(txt) ? 'Amazon Gift Card' : 'Amazon Card');
-    const items = [];
-    const after = txt.split(/Grand Total:\s*\$[\d,.]+/i)[1] || txt;
-    const chunks = after.split(/Sold by:/i);
-    for (let i = 0; i < chunks.length - 1; i++) {
-      const title = chunks[i].trim().split('\n').pop().trim();
-      const pm = chunks[i+1].match(/\$([\d,.]+)/);
-      if (title && pm) {
-        const total = parseFloat(pm[1].replace(/,/g,''));
-        items.push({ desc: title, sku: '', qtyLabel: 'Qty 1', unitPrice: total, total, discount: 0, category: catItem(title, 'Amazon') });
+
+    const lines = txt.split('\n').map(l => l.trim()).filter(Boolean);
+    function nextDollarAfter(regex) {
+      for (let i = 0; i < lines.length; i++) {
+        const inline = lines[i].match(new RegExp(regex.source + '\\s*\\$([\\d,]+\\.\\d{2})', 'i'));
+        if (inline) return parseFloat(inline[1].replace(/,/g, ''));
+        if (regex.test(lines[i])) {
+          for (let j = i + 1; j <= Math.min(i + 2, lines.length - 1); j++) {
+            const m = lines[j].match(/^\$([\d,]+\.\d{2})$/);
+            if (m) return parseFloat(m[1].replace(/,/g, ''));
+          }
+        }
+      }
+      return null;
+    }
+
+    const subtotalVal = nextDollarAfter(/^Item\(s\) Subtotal:/);
+    const taxVal = nextDollarAfter(/^Estimated tax to be collected:/) ?? nextDollarAfter(/^Tax:/) ?? 0;
+    let totalVal = nextDollarAfter(/^Grand Total:/) ?? nextDollarAfter(/^Total for this Order:/) ?? 0;
+
+    // Parse Subscribe & Save / coupon discounts on separate lines
+    let savings = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (/^(?:Subscribe & Save|Your Coupon Savings|Promotion Applied|Multibuy Discount):/i.test(lines[i])) {
+        const m = (lines[i] + ' ' + (lines[i+1] || '')).match(/-\$([\d,]+\.\d{2})/);
+        if (m) savings += parseFloat(m[1].replace(/,/g, ''));
       }
     }
-    const total = parseFloat(((txt.match(/Grand Total:\s*\$([\d,.]+)/i) || [])[1] || '0').replace(/,/g,'')) || items.reduce((s,i)=>s+i.total,0);
-    const subtotal = parseFloat(((txt.match(/Item\(s\) Subtotal:\s*\$([\d,.]+)/i) || [])[1] || total).toString().replace(/,/g,''));
-    const tax = parseFloat(((txt.match(/Estimated tax to be collected:\s*\$([\d,.]+)/i) || txt.match(/Tax:\s*\$([\d,.]+)/i) || [])[1] || '0').replace(/,/g,''));
-    return { id: fn, filename: fn, store: 'Amazon', date, orderId, location: 'Amazon.com', payment, subtotal, savings: 0, tax, total, items };
+
+    // Parse items: title lines appear right above "Sold by:" and prices appear right after "Sold by:" / "Supplied by:"
+    const items = [];
+    for (let i = 0; i < lines.length; i++) {
+      if (/^Sold by:/i.test(lines[i])) {
+        const titleParts = [];
+        for (let k = i - 1; k >= 0; k--) {
+          if (/^(?:Grand Total:|Estimated tax|Total before tax|Subscribe & Save|Shipping & Handling|Item\(s\) Subtotal:|Order Summary|Payment method|United States|Auto-delivered|Return window|Qty:|Condition:)/i.test(lines[k])) break;
+          if (/^\$[\d,]+\.\d{2}$/.test(lines[k])) break;
+          titleParts.unshift(lines[k]);
+        }
+        const desc = titleParts.join(' ').trim();
+        let price = 0;
+        for (let j = i + 1; j <= Math.min(i + 5, lines.length - 1); j++) {
+          const pm = lines[j].match(/^\$([\d,]+\.\d{2})$/);
+          if (pm) { price = parseFloat(pm[1].replace(/,/g, '')); break; }
+        }
+        if (desc) {
+          items.push({ desc, sku: '', qtyLabel: 'Qty 1', unitPrice: price, total: price, discount: 0, category: catItem(desc, 'Amazon') });
+        }
+      }
+    }
+
+    if (!totalVal) totalVal = items.reduce((s, i) => s + i.total, 0);
+    if (!items.length && totalVal > 0) {
+      items.push({ desc: `Amazon Order ${orderId}`, sku: '', qtyLabel: 'Qty 1', unitPrice: +(totalVal - taxVal).toFixed(2), total: +(totalVal - taxVal).toFixed(2), discount: 0, category: 'Other' });
+    }
+    return { id: fn, filename: fn, store: 'Amazon', date, orderId, location: 'Amazon.com', payment, subtotal: subtotalVal ?? totalVal, savings: +savings.toFixed(2), tax: taxVal, total: totalVal, items };
   }
 
   function parseGeneric(fn, txt, store) {
     const date = parseDate(fn, txt);
-    const total = parseFloat(((txt.match(/(?:Grand Total|TOTAL|Amount Charged|Order Total)\s*:?\s*\$?([\d,]+\.\d{2})/i) || [])[1] || '0').replace(/,/g,''));
+    const lines = txt.split('\n').map(l=>l.trim()).filter(Boolean);
+    let total = parseFloat(((txt.match(/(?:Grand Total|TOTAL|Amount Charged|Order Total|Amount Paid)\s*:?\s*\$?([\d,]+\.\d{2})/i) || [])[1] || '0').replace(/,/g,''));
+    if (!total) {
+      const idx = lines.findIndex(l => /^(?:Grand Total|TOTAL|Amount Charged|Order Total|Amount Paid):?$/i.test(l));
+      if (idx >= 0 && lines[idx+1]) {
+        const pm = lines[idx+1].match(/^\$?([\d,]+\.\d{2})$/);
+        if (pm) total = parseFloat(pm[1].replace(/,/g, ''));
+      }
+    }
     const tax = parseFloat(((txt.match(/(?:Sales Tax|TAX|Estimated Tax)\s*:?\s*\$?([\d,]+\.\d{2})/i) || [])[1] || '0').replace(/,/g,''));
-    const l4 = (txt.match(/(?:Visa|Mastercard|Amex|Discover|Card|ending in|\*)\s*(\d{4})/i) || [])[1];
+    const l4 = (txt.match(/(?:Visa|Mastercard|Amex|Discover|Card|ending in|\*{4})\s*(\d{4})/i) || [])[1];
     const payment = l4 ? `Card ending in ${l4}` : 'Card';
     const items = [];
-    for (const line of txt.split('\n').map(l=>l.trim()).filter(Boolean)) {
+    for (const line of lines) {
       if (/subtotal|tax|total|change|approved|visa|mastercard|amex|discover|payment|balance|savings/i.test(line)) continue;
       const m = line.match(/^(.{4,65}?)\s+\$?([\d,]+\.\d{2})$/);
       if (m) {
@@ -916,7 +1024,8 @@
       }
     }
     if (!items.length && total > 0) {
-      items.push({ desc: `${storeLabel(store)} Purchase (${fn.replace(/\.pdf$/i,'')})`, sku: '', qtyLabel: 'Qty 1', unitPrice: +(total-tax).toFixed(2), total: +(total-tax).toFixed(2), discount: 0, category: catItem(fn, store) });
+      const cleanName = fn.replace(/\.pdf$/i, '').replace(/^20\d{2}-\d{2}-\d{2}[-\s]*/i, '').trim();
+      items.push({ desc: cleanName || `${storeLabel(store)} Purchase`, sku: '', qtyLabel: 'Qty 1', unitPrice: +(total-tax).toFixed(2), total: +(total-tax).toFixed(2), discount: 0, category: catItem(cleanName || fn, store) });
     }
     return { id: fn, filename: fn, store, date, orderId: fn.replace(/\.pdf$/i,''), location: storeLabel(store), payment, subtotal: +(total-tax).toFixed(2), savings: 0, tax, total, items };
   }
