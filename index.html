@@ -3,2075 +3,1378 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#2563eb" id="metaThemeColor" />
+  <meta name="theme-color" content="#0d2b24" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Receipts" />
-  <title>Goobs Receipts</title>
+  <title>Receipt Tracker</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
   <link rel="icon" type="image/png" href="./icon-192.png" />
-  <!-- PDF.js for in-browser local Drive folder PDF parsing -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <style>
     :root {
-      --bg: #f1f5f9;
-      --surface: #ffffff;
-      --surface-2: #f8fafc;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-muted: #475569;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --primary-soft: #eff6ff;
-      --accent: #059669;
-      --accent-soft: #ecfdf5;
-      --warn: #d97706;
-      --warn-soft: #fffbeb;
-      --danger: #dc2626;
-      --danger-soft: #fef2f2;
-      --shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      --hero-bg: #0d2b24;
+      --hero-text: #f7f6f0;
+      --hero-muted: #b4c7c1;
+      --page-bg: #f6f5ef;
+      --card-bg: #ffffff;
+      --card-border: #e3e1d7;
+      --text: #13231f;
+      --text-muted: #62706b;
+      --pill-border: #d9d7cd;
+      --accent: #134e3e;
+      --accent-soft: #e3eee8;
+      --warn: #b45309;
+      --danger: #b91c1c;
+      --shadow: 0 2px 8px rgba(13, 43, 36, 0.04);
       --radius: 14px;
     }
 
-    [data-theme="ocean"] {
-      --bg: #ecfeff;
-      --surface: #ffffff;
-      --surface-2: #f0fdfa;
-      --border: #bae6fd;
-      --text: #083344;
-      --text-muted: #155e75;
-      --primary: #0284c7;
-      --primary-hover: #0369a1;
-      --primary-soft: #e0f2fe;
-      --accent: #0d9488;
-      --accent-soft: #ccfbf1;
-    }
-
-    [data-theme="warm"] {
-      --bg: #fefce8;
-      --surface: #ffffff;
-      --surface-2: #fffbeb;
-      --border: #fde68a;
-      --text: #451a03;
-      --text-muted: #78350f;
-      --primary: #d97706;
-      --primary-hover: #b45309;
-      --primary-soft: #fef3c7;
-      --accent: #16a34a;
-      --accent-soft: #dcfce7;
-    }
-
-    [data-theme="dark"] {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-2: #0f172a;
-      --border: #334155;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary: #3b82f6;
-      --primary-hover: #60a5fa;
-      --primary-soft: rgba(59, 130, 246, 0.16);
-      --accent: #10b981;
-      --accent-soft: rgba(16, 185, 129, 0.16);
-      --warn: #f59e0b;
-      --warn-soft: rgba(245, 158, 11, 0.16);
-      --danger: #ef4444;
-      --danger-soft: rgba(239, 68, 68, 0.16);
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-    }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--page-bg);
       color: var(--text);
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: calc(82px + env(safe-area-inset-bottom));
+      padding-bottom: calc(44px + env(safe-area-inset-bottom));
       line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
     }
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
+    /* DARK FOREST HERO HEADER (Matches right screenshot) */
+    .hero {
+      background: var(--hero-bg);
+      color: var(--hero-text);
+      padding: calc(16px + env(safe-area-inset-top)) 22px 26px;
+    }
+    .hero-inner {
+      max-width: 1220px;
+      margin: 0 auto;
+    }
+    .hero-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      box-shadow: var(--shadow);
+      gap: 12px;
+      margin-bottom: 18px;
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--hero-text);
     }
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: var(--primary);
-      color: #fff;
+    .brand-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       display: grid;
       place-items: center;
-      font-weight: 800;
-      font-size: 18px;
-      flex-shrink: 0;
     }
-    .brand h1 {
-      margin: 0;
-      font-size: 1.15rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-    }
-    .brand small {
-      display: block;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .header-actions {
+    .hero-right {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--hero-muted);
     }
-
-    .sync-pill {
+    .scan-chip {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--hero-text);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      padding: 6px 13px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      cursor: pointer;
     }
-    .sync-dot {
-      width: 8px;
-      height: 8px;
+    .scan-chip:hover { background: rgba(255, 255, 255, 0.2); }
+    .dot {
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
       background: #94a3b8;
     }
-    .sync-dot.online { background: var(--accent); }
-    .sync-dot.syncing { background: var(--warn); }
+    .dot.online { background: #34d399; }
+    .dot.syncing { background: #fbbf24; }
 
-    select.theme-select, .btn {
+    .hero-headline {
+      font-family: 'Instrument Serif', Georgia, "Times New Roman", serif;
+      font-size: clamp(2.6rem, 6vw, 3.7rem);
+      font-weight: 400;
+      line-height: 1.05;
+      margin: 0 0 18px 0;
+      letter-spacing: -0.01em;
+      color: var(--hero-text);
+    }
+
+    .search-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--hero-text);
+      margin-bottom: 8px;
+      opacity: 0.92;
+    }
+    .search-box-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      color: #6b7280;
+      display: flex;
+      pointer-events: none;
+    }
+    .search-input {
+      width: 100%;
+      background: #ffffff;
+      color: #111827;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 42px;
       font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 600;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      color: var(--text);
-      padding: 7px 11px;
+      font-size: 0.98rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+      outline: none;
+    }
+    .search-input::placeholder { color: #8c9692; }
+    .clear-btn {
+      position: absolute;
+      right: 12px;
+      background: #e5e7eb;
+      color: #374151;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 12px;
       cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
     }
-    .btn-primary {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-    }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-accent {
-      background: var(--accent);
-      color: #fff;
-      border-color: var(--accent);
-    }
-    .btn-sm { padding: 5px 9px; font-size: 0.78rem; }
+    .clear-btn.show { display: flex; }
 
-    main {
-      max-width: 1180px;
+    /* MAIN CONTAINER */
+    .container {
+      max-width: 1220px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 0 22px;
     }
 
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
-      gap: 12px;
-      margin-bottom: 16px;
+    /* UNDERLINE NAVIGATION TABS (Search | Browse | Spending | Card Match | Import & Sync) */
+    .tabs-bar {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      border-bottom: 1px solid var(--card-border);
+      margin-top: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
-    .kpi-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      box-shadow: var(--shadow);
-    }
-    .kpi-label {
-      font-size: 0.76rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+    .tabs-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2.5px solid transparent;
+      padding: 12px 2px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
       color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
     }
-    .kpi-value {
-      font-size: 1.45rem;
-      font-weight: 800;
-      margin-top: 4px;
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active {
       color: var(--text);
-    }
-    .kpi-sub {
-      font-size: 0.76rem;
-      color: var(--accent);
       font-weight: 600;
-      margin-top: 2px;
+      border-bottom-color: var(--hero-bg);
     }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-      margin-bottom: 16px;
-    }
-    .card-header {
+    /* STORE PILLS & SUB-FILTERS */
+    .toolbar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
+      margin-top: 18px;
       margin-bottom: 12px;
     }
-    .card-title {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 700;
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
+    .pill {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--pill-border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .pill:hover { border-color: var(--hero-bg); }
+    .pill.active {
+      background: var(--hero-bg);
+      color: var(--hero-text);
+      border-color: var(--hero-bg);
+      font-weight: 600;
+    }
+
+    .sub-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pill-select {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--pill-border);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .count-line {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* RESPONSIVE CARD GRID: 3 columns on desktop, 2 on iPad, 1 on iPhone */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 620px) {
+      .grid { grid-template-columns: 1fr; }
+      .hero { padding: calc(14px + env(safe-area-inset-top)) 16px 22px; }
+      .container { padding: 0 16px; }
+    }
+
+    /* PURCHASE CARD */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow);
+      transition: border-color 0.15s ease;
+    }
+    .card:hover { border-color: #b5b2a4; }
+
+    .card-top-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .store-badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+    .st-Amazon { background: #faedd8; color: #8c5308; }
+    .st-Costco { background: #e3eee8; color: #134e3e; }
+    .st-Sams { background: #e1ebf5; color: #164778; }
+    .st-Lowes { background: #e4e7f7; color: #28357a; }
+    .st-HomeDepot { background: #fbe5d8; color: #9c380c; }
+    .st-Other { background: #eceae2; color: #45524d; }
+
+    .card-item-title {
+      font-size: 1.03rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 6px 0;
+      line-height: 1.38;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .card-sku {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .card-footer {
+      margin-top: auto;
+    }
+    .card-price {
+      font-size: 1.24rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .card-discount {
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .card-pay {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .card-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 12px;
+      padding: 0;
+      background: none;
+      border: none;
+      color: var(--hero-bg);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .card-link:hover { text-decoration: underline; }
+
+    /* VIEWS & PANELS */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-top: 18px;
+    }
+    .serif-h2 {
+      font-family: 'Instrument Serif', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      margin: 0 0 12px 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+    .kpi {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+    .kpi-lbl { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.04em; }
+    .kpi-val { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+    .kpi-sub { font-size: 0.78rem; color: var(--accent); margin-top: 2px; }
 
     .two-col {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 16px;
     }
+    .bar-row { margin-bottom: 11px; }
+    .bar-head { display: flex; justify-content: space-between; font-size: 0.86rem; margin-bottom: 4px; }
+    .bar-bg { height: 8px; background: #efede6; border-radius: 999px; overflow: hidden; }
+    .bar-fg { height: 100%; background: var(--hero-bg); border-radius: 999px; }
 
-    .bar-row {
-      margin-bottom: 10px;
-    }
-    .bar-meta {
-      display: flex;
-      justify-content: space-between;
+    .btn {
+      font-family: inherit;
       font-size: 0.85rem;
       font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .bar-track {
-      height: 10px;
-      border-radius: 999px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .bar-fill {
-      height: 100%;
-      border-radius: 999px;
-      background: var(--primary);
-      transition: width 0.3s ease;
-    }
-
-    .filter-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .filter-bar input, .filter-bar select, input.field, textarea.field, select.field {
-      padding: 9px 12px;
       border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--surface);
+      border: 1px solid var(--pill-border);
+      background: #ffffff;
       color: var(--text);
+      padding: 9px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { border-color: var(--hero-bg); }
+    .btn-dark { background: var(--hero-bg); color: var(--hero-text); border-color: var(--hero-bg); }
+
+    .dropzone {
+      border: 2px dashed #b9b6a8;
+      background: #faf9f5;
+      border-radius: var(--radius);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+    }
+    .dropzone:hover { border-color: var(--hero-bg); background: #f2f0e8; }
+
+    .field {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--pill-border);
       font-family: inherit;
       font-size: 0.9rem;
     }
-    .filter-bar input[type="search"] {
-      flex: 1 1 220px;
-    }
 
-    .receipt-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .receipt-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+    .table-wrap { overflow-x: auto; border: 1px solid var(--card-border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--card-border); text-align: left; }
+    th { background: #faf9f5; color: var(--text-muted); font-weight: 600; }
+
+    .price-banner {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--hero-bg);
       border-radius: var(--radius);
-      padding: 14px;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      transition: border-color 0.15s ease;
-    }
-    .receipt-card:hover { border-color: var(--primary); }
-    .receipt-top {
-      display: flex;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      display: none;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .store-badge {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 7px;
-      font-size: 0.74rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-    }
-    .store-Costco { background: #fee2e2; color: #b91c1c; }
-    .store-Sams { background: #dbeafe; color: #1d4ed8; }
-    .store-Amazon { background: #fef3c7; color: #b45309; }
-    .store-Lowes { background: #e0e7ff; color: #3730a3; }
-    .store-HomeDepot { background: #ffedd5; color: #c2410c; }
-    .store-Other { background: #e2e8f0; color: #334155; }
-
-    .receipt-amount {
-      font-size: 1.15rem;
-      font-weight: 800;
-      text-align: right;
-    }
-    .receipt-meta {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-      display: flex;
+      align-items: center;
       flex-wrap: wrap;
       gap: 8px;
     }
+    .price-banner.show { display: flex; }
 
-    .table-wrap {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.86rem;
-    }
-    th, td {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    th {
-      background: var(--surface-2);
-      font-weight: 700;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-    tr:last-child td { border-bottom: none; }
-
-    .cat-pill {
-      display: inline-block;
-      padding: 3px 8px;
-      border-radius: 999px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      background: var(--primary-soft);
-      color: var(--primary);
-    }
-
-    .drop-zone {
-      border: 2px dashed var(--primary);
-      background: var(--primary-soft);
-      border-radius: var(--radius);
-      padding: 24px 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-    .drop-zone:hover { background: var(--surface-2); }
-
-    .progress-wrap {
-      margin-top: 12px;
-      display: none;
-    }
-    .progress-bar {
-      height: 12px;
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      transition: width 0.2s ease;
-    }
-
-    /* Bottom Navigation */
-    nav.bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 40;
-      background: var(--surface);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-      box-shadow: 0 -2px 10px rgba(15, 23, 42, 0.06);
-    }
-    .nav-btn {
-      flex: 1;
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-family: inherit;
-      font-size: 0.72rem;
-      font-weight: 700;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      padding: 5px 2px;
-      cursor: pointer;
-      border-radius: 10px;
-    }
-    .nav-btn span.ico { font-size: 1.25rem; line-height: 1; }
-    .nav-btn.active {
-      color: var(--primary);
-      background: var(--primary-soft);
-    }
-
-    /* Modal */
-    .modal-backdrop {
+    .modal-bg {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.55);
+      background: rgba(13, 43, 36, 0.55);
       z-index: 60;
       display: none;
       align-items: center;
       justify-content: center;
       padding: 16px;
     }
-    .modal-backdrop.open { display: flex; }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
+    .modal-bg.open { display: flex; }
+    .modal-box {
+      background: #ffffff;
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       width: 100%;
-      max-width: 720px;
+      max-width: 740px;
       max-height: 88vh;
       overflow-y: auto;
-      padding: 18px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-    }
-
-    .status-banner {
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-      background: var(--accent-soft);
-      color: var(--accent);
-      border: 1px solid var(--border);
-    }
-    .status-warn {
-      background: var(--warn-soft);
-      color: var(--warn);
+      padding: 22px;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.25);
     }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <div class="brand-icon">🧾</div>
-    <div>
-      <h1>Goobs Receipts</h1>
-      <small id="headerSubtitle">Itemized Vault &amp; Spend Tracker</small>
-    </div>
-  </div>
-  <div class="header-actions">
-    <button class="sync-pill" id="syncStatusBtn" onclick="switchTab('sync')" title="Firebase Cloud Sync Status">
-      <span class="sync-dot" id="syncDot"></span>
-      <span id="syncLabel">Local Only</span>
-    </button>
-    <select class="theme-select" id="themeSelector" aria-label="Color Theme">
-      <option value="daylight">Daylight</option>
-      <option value="ocean">Ocean</option>
-      <option value="warm">Warm Gold</option>
-      <option value="dark">Dark</option>
-    </select>
-  </div>
-</header>
-
-<main>
-  <!-- TAB 1: DASHBOARD -->
-  <section id="tab-dashboard" class="tab-panel active">
-    <div class="filter-bar">
-      <select id="dashYearFilter"><option value="ALL">All Years</option></select>
-      <select id="dashStoreFilter"><option value="ALL">All Stores</option></select>
-      <select id="dashCardFilter"><option value="ALL">All Payment Methods</option></select>
-    </div>
-
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Total Spend</div>
-        <div class="kpi-value" id="kpiTotalSpend">$0.00</div>
-        <div class="kpi-sub" id="kpiReceiptCount">0 receipts indexed</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Line Items</div>
-        <div class="kpi-value" id="kpiItemCount">0</div>
-        <div class="kpi-sub" id="kpiAvgBasket">$0.00 avg receipt</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Instant Savings</div>
-        <div class="kpi-value" id="kpiSavings">$0.00</div>
-        <div class="kpi-sub">Warehouse &amp; promo discounts</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Sales Tax Paid</div>
-        <div class="kpi-value" id="kpiTax">$0.00</div>
-        <div class="kpi-sub" id="kpiEffectiveTax">0.0% effective rate</div>
-      </div>
-    </div>
-
-    <div class="two-col">
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Spend by Category (Itemized Split)</h2>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="brand-badge">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M8 7h8"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>
+          </div>
+          <span>Receipt Tracker</span>
         </div>
-        <div id="categoryBars"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <h2 class="card-title">Spend by Store &amp; Payment Card</h2>
+        <div class="hero-right">
+          <span id="monthDisplay">November 2026</span>
+          <button class="scan-chip" onclick="setView('import')">
+            <span class="dot" id="syncDot"></span>
+            <span id="syncChipText">+ Import / Sync</span>
+          </button>
         </div>
-        <div id="storeBars"></div>
-        <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
-        <div id="cardBars"></div>
+      </div>
+
+      <h1 class="hero-headline" id="heroTitle">Find a purchase</h1>
+
+      <label class="search-label" for="searchInput">Search by SKU or item description</label>
+      <div class="search-box-wrap">
+        <span class="search-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input id="searchInput" class="search-input" type="search" placeholder="Try Ninja Crispi or 1872239" autocomplete="off" />
+        <button id="clearBtn" class="clear-btn" onclick="clearSearch()" aria-label="Clear search">✕</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <nav class="tabs-bar">
+      <button class="tab-btn active" data-view="search" onclick="setView('search')">Search</button>
+      <button class="tab-btn" data-view="browse" onclick="setView('browse')">Browse</button>
+      <button class="tab-btn" data-view="spending" onclick="setView('spending')">Spending</button>
+      <button class="tab-btn" data-view="matcher" onclick="setView('matcher')">Card Match</button>
+      <button class="tab-btn" data-view="import" onclick="setView('import')">Import &amp; Sync</button>
+    </nav>
+
+    <!-- SHARED FILTER BAR FOR SEARCH & BROWSE -->
+    <div id="sharedFilters">
+      <div class="toolbar">
+        <div class="pills" id="storePills"></div>
+        <div class="sub-controls">
+          <select id="yearSelect" class="pill-select" onchange="resetLimitsAndRender()"><option value="ALL">All Years</option></select>
+          <select id="catSelect" class="pill-select" onchange="resetLimitsAndRender()"><option value="ALL">All Categories</option></select>
+          <select id="sortSelect" class="pill-select" onchange="resetLimitsAndRender()">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="price-desc">Highest Price</option>
+            <option value="price-asc">Lowest Price</option>
+          </select>
+        </div>
+      </div>
+      <div class="count-line">
+        <span id="summaryLine">0 items on 0 receipts</span>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Monthly Spend Trend</h2>
+    <!-- VIEW 1: SEARCH -->
+    <section id="view-search" class="view active">
+      <div id="priceBanner" class="price-banner">
+        <div>
+          <strong id="pbTitle">Price History</strong>
+          <div id="pbSub" style="font-size:0.82rem;color:var(--text-muted);"></div>
+        </div>
+        <div id="pbStats" style="font-size:0.85rem;"></div>
       </div>
-      <div id="monthlyBars"></div>
-    </div>
-  </section>
 
-  <!-- TAB 2: RECEIPTS -->
-  <section id="tab-receipts" class="tab-panel">
-    <div class="filter-bar">
-      <input type="search" id="receiptSearch" placeholder="Search store, order #, card last 4, or item..." />
-      <select id="receiptStoreFilter"><option value="ALL">All Stores</option></select>
-      <select id="receiptYearFilter"><option value="ALL">All Years</option></select>
-      <select id="receiptSort">
-        <option value="date-desc">Newest First</option>
-        <option value="date-asc">Oldest First</option>
-        <option value="total-desc">Highest Amount</option>
-        <option value="total-asc">Lowest Amount</option>
-      </select>
-    </div>
-    <div id="receiptsCountLabel" style="font-size:0.82rem;color:var(--text-muted);margin-bottom:10px;font-weight:600;"></div>
-    <div class="receipt-list" id="receiptList"></div>
-    <div style="text-align:center;margin-top:14px;">
-      <button class="btn" id="loadMoreReceiptsBtn" style="display:none;">Load More Receipts</button>
-    </div>
-  </section>
-
-  <!-- TAB 3: LINE ITEMS & PRICE TRACKER -->
-  <section id="tab-items" class="tab-panel">
-    <div class="filter-bar">
-      <input type="search" id="itemSearch" placeholder="Search line items (e.g. chicken thighs, chlorine, Kinder's, shrimp)..." />
-      <select id="itemCategoryFilter"><option value="ALL">All Categories</option></select>
-      <select id="itemStoreFilter"><option value="ALL">All Stores</option></select>
-    </div>
-
-    <div class="card" id="priceHistorySummaryCard" style="display:none;">
-      <div class="card-header">
-        <h2 class="card-title" id="priceHistoryTitle">Item Price History</h2>
-        <span class="cat-pill" id="priceHistoryStats"></span>
+      <div class="grid" id="itemsGrid"></div>
+      <div style="text-align:center;margin-top:20px;">
+        <button id="moreItemsBtn" class="btn" style="display:none;" onclick="itemsLimit+=60;renderSearch();">Show More Items</button>
       </div>
-      <div id="priceHistoryDetails" style="font-size:0.88rem;color:var(--text-muted);"></div>
-    </div>
+    </section>
 
-    <div class="card" style="padding:0;overflow:hidden;">
-      <div class="table-wrap" style="border:none;">
+    <!-- VIEW 2: BROWSE RECEIPTS -->
+    <section id="view-browse" class="view">
+      <div class="grid" id="receiptsGrid"></div>
+      <div style="text-align:center;margin-top:20px;">
+        <button id="moreReceiptsBtn" class="btn" style="display:none;" onclick="receiptsLimit+=45;renderBrowse();">Show More Receipts</button>
+      </div>
+    </section>
+
+    <!-- VIEW 3: SPENDING -->
+    <section id="view-spending" class="view">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-lbl">Total Spend</div><div class="kpi-val" id="kpiSpend">$0.00</div><div class="kpi-sub" id="kpiRecs">0 receipts</div></div>
+        <div class="kpi"><div class="kpi-lbl">Line Items</div><div class="kpi-val" id="kpiItems">0</div><div class="kpi-sub" id="kpiAvg">$0.00 avg receipt</div></div>
+        <div class="kpi"><div class="kpi-lbl">Instant Savings</div><div class="kpi-val" id="kpiSav">$0.00</div><div class="kpi-sub">Warehouse &amp; promo discounts</div></div>
+        <div class="kpi"><div class="kpi-lbl">Sales Tax</div><div class="kpi-val" id="kpiTax">$0.00</div><div class="kpi-sub" id="kpiTaxRate">0.0% effective rate</div></div>
+      </div>
+      <div class="two-col">
+        <div class="panel"><h2 class="serif-h2">Spend by Category</h2><div id="catBars"></div></div>
+        <div class="panel"><h2 class="serif-h2">Spend by Store &amp; Card</h2><div id="storeBars"></div><hr style="border:none;border-top:1px solid var(--card-border);margin:14px 0;"><div id="cardBars"></div></div>
+      </div>
+      <div class="panel"><h2 class="serif-h2">Monthly Trend</h2><div id="monthBars"></div></div>
+    </section>
+
+    <!-- VIEW 4: CARD CSV MATCHER -->
+    <section id="view-matcher" class="view">
+      <div class="panel">
+        <h2 class="serif-h2">Credit Card / Bank Statement Matcher</h2>
+        <p style="margin-top:0;font-size:0.88rem;color:var(--text-muted);">Drop a CSV statement export to match charges against your indexed receipts (&plusmn;$0.05 within &plusmn;4 days) and spot missing receipts.</p>
+        <div class="dropzone" onclick="document.getElementById('csvInput').click()">
+          <strong>📄 Select CSV Statement File</strong>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Supports Date, Description, Amount columns</div>
+          <input id="csvInput" type="file" accept=".csv,text/csv" style="display:none;" />
+        </div>
+      </div>
+      <div id="matchWrap" style="display:none;">
+        <div class="kpi-grid">
+          <div class="kpi"><div class="kpi-lbl">Total Charges</div><div class="kpi-val" id="mTotal">0</div></div>
+          <div class="kpi"><div class="kpi-lbl">Matched</div><div class="kpi-val" style="color:var(--accent);" id="mFound">0</div></div>
+          <div class="kpi"><div class="kpi-lbl">Missing Receipt</div><div class="kpi-val" style="color:var(--warn);" id="mMiss">0</div></div>
+        </div>
+        <div class="panel" style="padding:0;overflow:hidden;">
+          <div class="table-wrap" style="border:none;">
+            <table><thead><tr><th>Status</th><th>Date</th><th>Description</th><th>Amount</th><th>Matched Receipt</th></tr></thead><tbody id="mBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: IMPORT & FIREBASE SYNC -->
+    <section id="view-import" class="view">
+      <div class="panel">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+          <h2 class="serif-h2" style="margin:0;">Scan Google Drive Receipt Folders</h2>
+          <button class="btn" onclick="loadSampleData()">Load Sample Receipts</button>
+        </div>
+        <p style="margin-top:0;font-size:0.88rem;color:var(--text-muted);">
+          Select your synced <strong>Gemini Projects</strong> folder (or any <code>Receipts - *</code> folder) on your Mac. Automatically extracts SKUs, prices, discounts, and card digits, and deduplicates across both web-scraped and emailed receipts.
+        </p>
+        <div class="dropzone" onclick="document.getElementById('folderInput').click()">
+          <strong>📁 Choose Receipt Folder(s) in Finder</strong>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Parses Costco, Sam's Club, Amazon, Lowe's, Home Depot &amp; email PDFs locally</div>
+          <input id="folderInput" type="file" webkitdirectory directory multiple accept=".pdf,application/pdf" style="display:none;" />
+        </div>
+        <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;">
+          <button class="btn" onclick="document.getElementById('filesInput').click()">+ Select Individual PDFs</button>
+          <input id="filesInput" type="file" multiple accept=".pdf,application/pdf" style="display:none;" />
+          <button class="btn" onclick="exportJSON()">⬇ Export JSON Backup</button>
+          <button class="btn" onclick="document.getElementById('jsonInput').click()">⬆ Import JSON Backup</button>
+          <input id="jsonInput" type="file" accept=".json,application/json" style="display:none;" />
+          <button class="btn" style="color:var(--danger);" onclick="clearLocalDB()">🗑 Clear Local Cache</button>
+        </div>
+        <div id="progWrap" style="display:none;margin-top:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:600;margin-bottom:4px;">
+            <span id="progText">Scanning...</span><span id="progPct">0%</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fg" id="progFill" style="width:0%;"></div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+          <h2 class="serif-h2" style="margin:0;">Firebase Cloud Sync (goobs-apps-aa819)</h2>
+          <span class="store-badge st-Costco" id="fbBadge">Local Only</span>
+        </div>
+        <p style="margin-top:0;font-size:0.86rem;color:var(--text-muted);">
+          Paste your Firebase Web App config JSON from <code>goobs-apps-aa819</code> to sync your indexed receipts, SKU overrides, and notes across your iPhone, iPad, and Mac.
+        </p>
+        <div style="display:grid;gap:10px;max-width:640px;">
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Household Vault ID</label>
+            <input id="fbRoom" class="field" type="text" value="armbruster-receipts-vault" />
+          </div>
+          <div>
+            <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Firebase Config JSON</label>
+            <textarea id="fbCfg" class="field" rows="4" style="font-family:monospace;font-size:0.8rem;" placeholder='{"apiKey":"...","authDomain":"goobs-apps-aa819.firebaseapp.com","projectId":"goobs-apps-aa819",...}'></textarea>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-dark" onclick="connectFirebase()">Save &amp; Connect</button>
+            <button class="btn" onclick="pushAllCloud()">⬆ Push Local to Cloud</button>
+            <button class="btn" onclick="pullAllCloud()">⬇ Pull Cloud to Local</button>
+          </div>
+          <div id="fbMsg" style="font-size:0.82rem;color:var(--text-muted);font-weight:500;"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FULL RECEIPT MODAL -->
+  <div class="modal-bg" id="modalBg" onclick="if(event.target===this) closeModal()">
+    <div class="modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;">
+        <div>
+          <span class="store-badge" id="mStore">Store</span>
+          <h2 class="serif-h2" id="mTitle" style="margin:8px 0 2px;">Receipt Details</h2>
+          <div id="mSub" style="font-size:0.84rem;color:var(--text-muted);"></div>
+        </div>
+        <button class="btn" onclick="closeModal()">✕ Close</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;">
+        <input id="mNoteInput" class="field" placeholder="Add receipt note..." />
+        <button class="btn btn-dark" onclick="saveNote()">Save</button>
+      </div>
+      <div class="table-wrap">
         <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Store</th>
-              <th>Item Description</th>
-              <th>Qty / Wt</th>
-              <th>Unit</th>
-              <th>Total</th>
-              <th>Category</th>
-            </tr>
-          </thead>
-          <tbody id="itemsTableBody"></tbody>
+          <thead><tr><th>Item &amp; SKU</th><th>Qty</th><th>Amount</th><th>Category</th></tr></thead>
+          <tbody id="mItems"></tbody>
         </table>
       </div>
+      <div id="mTotals" style="margin-top:14px;text-align:right;font-size:0.9rem;"></div>
     </div>
-    <div style="text-align:center;margin-top:12px;">
-      <button class="btn" id="loadMoreItemsBtn" style="display:none;">Load More Items</button>
-    </div>
-  </section>
-
-  <!-- TAB 4: STATEMENT MATCHER -->
-  <section id="tab-matcher" class="tab-panel">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">Credit Card / Bank CSV Statement Matcher</h2>
-      </div>
-      <p style="margin-top:0;font-size:0.88rem;color:var(--text-muted);">
-        Drop a CSV export from Chase, Visa, Amex, or your bank to match every charge against your indexed Google Drive receipts (matches exact or &plusmn;$0.05 amounts within &plusmn;4 days) and spot any missing receipts.
-      </p>
-      <div class="drop-zone" onclick="document.getElementById('csvFileInput').click()">
-        <strong>📄 Select Bank / Credit Card CSV File</strong>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Supports standard Date, Description, Amount columns</div>
-        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none;" />
-      </div>
-    </div>
-
-    <div id="matcherResults" style="display:none;">
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Statement Charges</div>
-          <div class="kpi-value" id="matchTotalRows">0</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Matched to Receipt</div>
-          <div class="kpi-value" style="color:var(--accent);" id="matchFoundCount">0</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Unmatched Charges</div>
-          <div class="kpi-value" style="color:var(--warn);" id="matchMissingCount">0</div>
-        </div>
-      </div>
-      <div class="card" style="padding:0;overflow:hidden;">
-        <div class="table-wrap" style="border:none;">
-          <table>
-            <thead>
-              <tr>
-                <th>Status</th>
-                <th>Stmt Date</th>
-                <th>Merchant / Description</th>
-                <th>Amount</th>
-                <th>Matched Receipt</th>
-              </tr>
-            </thead>
-            <tbody id="matcherTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TAB 5: IMPORT & FIREBASE SYNC -->
-  <section id="tab-sync" class="tab-panel">
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">1. Import Receipts from Google Drive Folder</h2>
-        <button class="btn btn-sm" onclick="loadSampleData()">Load Sample Receipts</button>
-      </div>
-      <p style="margin-top:0;font-size:0.88rem;color:var(--text-muted);">
-        Select your synced <strong>Gemini Projects</strong> folder (or individual <code>Receipts - Amazon</code>, <code>Receipts - Costco</code>, <code>Receipts - Sams</code>, <code>Receipts - Lowes</code>, <code>Receipts - Home Depot</code> folders) on your Mac. Already-imported filenames are skipped automatically so incremental updates take seconds.
-      </p>
-      <div class="drop-zone" onclick="document.getElementById('folderInput').click()">
-        <strong>📁 Choose Receipt Folder(s) or PDFs</strong>
-        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Parses Sam's Club, Costco, Amazon, Lowe's, Home Depot &amp; generic PDFs locally in your browser</div>
-        <input type="file" id="folderInput" webkitdirectory directory multiple accept=".pdf,application/pdf" style="display:none;" />
-      </div>
-      <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
-        <button class="btn btn-sm" onclick="document.getElementById('multiPdfInput').click()">+ Select Individual PDF Files</button>
-        <input type="file" id="multiPdfInput" multiple accept=".pdf,application/pdf" style="display:none;" />
-        <button class="btn btn-sm" onclick="exportDatabaseJSON()">⬇ Export JSON Backup</button>
-        <button class="btn btn-sm" onclick="document.getElementById('importJsonInput').click()">⬆ Import JSON Backup</button>
-        <input type="file" id="importJsonInput" accept=".json,application/json" style="display:none;" />
-        <button class="btn btn-sm" style="color:var(--danger);" onclick="clearAllData()">🗑 Clear Local DB</button>
-      </div>
-
-      <div class="progress-wrap" id="importProgressWrap">
-        <div style="display:flex;justify-content:space-between;font-size:0.82rem;font-weight:700;margin-bottom:4px;">
-          <span id="importProgressText">Parsing PDFs...</span>
-          <span id="importProgressPct">0%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" id="importProgressFill"></div></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <h2 class="card-title">2. Firebase Cloud Sync (goobs-apps-aa819)</h2>
-        <span class="cat-pill" id="fbModeBadge">Offline / LocalStorage</span>
-      </div>
-      <p style="margin-top:0;font-size:0.86rem;color:var(--text-muted);">
-        Connects to your shared Goobs-Apps Firebase project so parsed receipts, custom item categories, and notes sync automatically across your iPhone, iPad, and desktop. Paste your Firebase Web App config JSON (or use your existing <code>sharing/SETUP.md</code> config) and Room/Household ID below.
-      </p>
-      <div style="display:grid;gap:10px;max-width:640px;">
-        <div>
-          <label style="font-size:0.8rem;font-weight:700;display:block;margin-bottom:4px;">Household Sync Key / Collection ID</label>
-          <input type="text" id="fbRoomId" class="field" style="width:100%;" placeholder="e.g. armbruster-receipts-vault" value="armbruster-receipts-vault" />
-        </div>
-        <div>
-          <label style="font-size:0.8rem;font-weight:700;display:block;margin-bottom:4px;">Firebase Config JSON (from Firebase Console &rarr; Project Settings)</label>
-          <textarea id="fbConfigInput" class="field" rows="5" style="width:100%;font-family:monospace;font-size:0.8rem;" placeholder='{"apiKey":"...","authDomain":"goobs-apps-aa819.firebaseapp.com","projectId":"goobs-apps-aa819",...}'></textarea>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
-          <button class="btn btn-primary" onclick="saveAndConnectFirebase()">Save &amp; Connect Firebase</button>
-          <button class="btn btn-accent" onclick="pushAllToFirebase()">⬆ Push Local DB to Cloud</button>
-          <button class="btn" onclick="pullFromFirebase()">⬇ Pull Cloud DB</button>
-        </div>
-        <div id="fbStatusMsg" style="font-size:0.82rem;color:var(--text-muted);font-weight:600;"></div>
-      </div>
-    </div>
-  </section>
-</main>
-
-<!-- RECEIPT DETAIL MODAL -->
-<div class="modal-backdrop" id="receiptModal">
-  <div class="modal">
-    <div class="card-header">
-      <div>
-        <span class="store-badge" id="modalStoreBadge">STORE</span>
-        <h2 class="card-title" id="modalTitle" style="margin-top:6px;">Receipt Details</h2>
-        <div style="font-size:0.82rem;color:var(--text-muted);" id="modalSub"></div>
-      </div>
-      <button class="btn btn-sm" onclick="closeReceiptModal()">✕ Close</button>
-    </div>
-
-    <div style="margin-bottom:12px;">
-      <label style="font-size:0.78rem;font-weight:700;color:var(--text-muted);display:block;margin-bottom:4px;">Receipt Notes / Tags</label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="modalNotesInput" class="field" style="flex:1;" placeholder="Add note (e.g. Thanksgiving groceries, Pool supplies, Cruise prep)..." />
-        <button class="btn btn-primary btn-sm" onclick="saveModalNote()">Save Note</button>
-      </div>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Qty / Wt</th>
-            <th>Price</th>
-            <th>Category (Tap to Override)</th>
-          </tr>
-        </thead>
-        <tbody id="modalItemsBody"></tbody>
-      </table>
-    </div>
-
-    <div id="modalTotals" style="margin-top:12px;text-align:right;font-size:0.9rem;"></div>
   </div>
-</div>
 
-<nav class="bottom-nav">
-  <button class="nav-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
-    <span class="ico">📊</span><span>Dashboard</span>
-  </button>
-  <button class="nav-btn" data-tab="receipts" onclick="switchTab('receipts')">
-    <span class="ico">🧾</span><span>Receipts</span>
-  </button>
-  <button class="nav-btn" data-tab="items" onclick="switchTab('items')">
-    <span class="ico">🏷️</span><span>Items &amp; Prices</span>
-  </button>
-  <button class="nav-btn" data-tab="matcher" onclick="switchTab('matcher')">
-    <span class="ico">💳</span><span>CSV Match</span>
-  </button>
-  <button class="nav-btn" data-tab="sync" onclick="switchTab('sync')">
-    <span class="ico">☁️</span><span>Import &amp; Sync</span>
-  </button>
-</nav>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 
-<!-- Firebase Compat SDKs for zero-build-step static PWA compatibility -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script>
+  const DB_NAME = 'ReceiptTrackerV3';
+  const STORE = 'receipts';
+  const LS_OVR = 'rt_v3_overrides';
+  const LS_NOTE = 'rt_v3_notes';
+  const LS_CFG = 'goobs_receipts_fb_cfg_v1';
+  const LS_ROOM = 'goobs_receipts_fb_room_v1';
 
-<script>
-// ==========================================
-// 1. STATE & INDEXEDDB + LOCALSTORAGE LAYER
-// ==========================================
-const DB_NAME = 'GoobsReceiptsDB';
-const DB_VERSION = 1;
-const STORE_RECEIPTS = 'receipts';
-const LS_OVERRIDES = 'goobs_receipts_cat_overrides_v1';
-const LS_NOTES = 'goobs_receipts_notes_v1';
-const LS_FB_CFG = 'goobs_receipts_fb_cfg_v1';
-const LS_FB_ROOM = 'goobs_receipts_fb_room_v1';
-const LS_THEME = 'goobs_receipts_theme_v1';
-
-const CATEGORIES = [
-  'Groceries & Meat',
-  'Household & Paper',
-  'Pool & Patio',
-  'Home Improvement',
-  'Electronics & Tech',
-  'Clothing & Apparel',
-  'Health & Personal Care',
-  'Pets (Phil & Chuck)',
-  'Crafting & Maker',
-  'Dining & Beverages',
-  'Gifts & Seasonal',
-  'Other'
-];
-
-let idb = null;
-let allReceipts = [];
-let catOverrides = JSON.parse(localStorage.getItem(LS_OVERRIDES) || '{}');
-let receiptNotes = JSON.parse(localStorage.getItem(LS_NOTES) || '{}');
-let fbDb = null;
-let fbUnsubscribe = null;
-let activeModalReceiptId = null;
-let receiptsRenderLimit = 50;
-let itemsRenderLimit = 80;
-
-if (window.pdfjsLib) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-}
-
-function openIDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = (e) => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_RECEIPTS)) {
-        db.createObjectStore(STORE_RECEIPTS, { keyPath: 'id' });
-      }
-    };
-    req.onsuccess = () => { idb = req.result; resolve(idb); };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function idbGetAll() {
-  return new Promise((resolve, reject) => {
-    const tx = idb.transaction(STORE_RECEIPTS, 'readonly');
-    const store = tx.objectStore(STORE_RECEIPTS);
-    const req = store.getAll();
-    req.onsuccess = () => resolve(req.result || []);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-function idbPutMany(records) {
-  return new Promise((resolve, reject) => {
-    const tx = idb.transaction(STORE_RECEIPTS, 'readwrite');
-    const store = tx.objectStore(STORE_RECEIPTS);
-    for (const r of records) store.put(r);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-function idbClear() {
-  return new Promise((resolve, reject) => {
-    const tx = idb.transaction(STORE_RECEIPTS, 'readwrite');
-    tx.objectStore(STORE_RECEIPTS).clear();
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-// ==========================================
-// 2. SMART ITEM AUTO-CATEGORIZER
-// ==========================================
-function normalizeItemKey(desc) {
-  return (desc || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-}
-
-function categorizeItem(desc, store) {
-  const key = normalizeItemKey(desc);
-  if (catOverrides[key]) return catOverrides[key];
-
-  if (/cat food|friskies|temptations|cat litter|scratcher|catnip/.test(key)) return 'Pets (Phil & Chuck)';
-  if (/chlorine|pool|float|lounger|citronella|sprinkler|patio|grill cover|deck box|sunshade|water blaster/.test(key)) return 'Pool & Patio';
-  if (/chicken|beef|turkey|shrimp|salmon|crab|lobster|pork|ham|brisket|bacon|sausage|steak|tilapia|meatball|cheese|milk|cream|egg|potato|mushroom|spinach|broccoli|orange|blueberr|pomegranate|bread|tortilla|buns|pasta|ravioli|tortellini|soup|salsa|queso|hummus|guacamole|olive|pickle|ketchup|sauce|seasoning|rub|marinade|coffee|k cup|popcorn|chips|cracker|goldfish|pretzel|candy|chocolate|pizza|egg roll|sushi|salad|maple syrup|butter|yogurt|granola|almond|pistachio|peanut butter/.test(key)) return 'Groceries & Meat';
-  if (/soda|coca cola|zevia|gatorade|lemonade|sunnyd|water|wine|hard lemonade|drink/.test(key)) return 'Dining & Beverages';
-  if (/charmin|bounty|paper towel|toilet paper|tissue|trash bag|clean up bag|chinet|paper plate|paper bowl|cutlery|dawn|tide|detergent|airwick|freshener|storage container|hefty|hanger|mop|bissell|vacuum|rug|towel|shower|quilt/.test(key)) return 'Household & Paper';
-  if (/usb|hdmi|cable|charger|monitor|light bar|extension cord|outlet|thermometer|bluetooth|microwave|gaming chair|turbotax|battery|camera|router|sd card/.test(key)) return 'Electronics & Tech';
-  if (/glue gun|glue stick|paint set|cricut|filament|sublimation|vinyl|craft|ribbon/.test(key)) return 'Crafting & Maker';
-  if (/duct tape|weed|grass killer|ortho|lumber|drill|saw|wrench|screw|bolt|paint|primer|faucet|valve|pipe|filter|mulch|fertilizer/.test(key)) return 'Home Improvement';
-  if (/shirt|tee|jersey|jacket|pant|cargo|shorts|swim trunk|sweater|shoes|skechers|slip on|sock|hat|glasses|fitsover/.test(key)) return 'Clothing & Apparel';
-  if (/tampon|tampax|pad|always|liner|acetaminophen|ibuprofen|toothbrush|colgate|shampoo|conditioner|dove|body wash|everyman jack|razor|lotion|vitamin|medicine/.test(key)) return 'Health & Personal Care';
-  if (/ornament|snowman|wreath|garland|halloween|christmas|roll wrap|lego|pokemon|disney|toy|game|puzzle|stamp|bouquet/.test(key)) return 'Gifts & Seasonal';
-
-  if (store === 'HomeDepot' || store === 'Lowes') return 'Home Improvement';
-  return 'Other';
-}
-
-// ==========================================
-// 3. MULTI-STORE RECEIPT PDF PARSERS
-// ==========================================
-function detectStore(filename, text) {
-  const f = filename.toLowerCase();
-  const t = text.toLowerCase();
-  if (f.includes('sams') || t.includes("sam's club") || t.includes('samsclub.com')) return 'Sams';
-  if (f.includes('costco') || t.includes('costco.com') || t.includes('whse:')) return 'Costco';
-  if (f.includes('amazon') || t.includes('amazon.com') || /order #\s*\d{3}-\d{7}-\d{7}/.test(t)) return 'Amazon';
-  if (f.includes('lowes') || f.includes("lowe's") || t.includes("lowe's")) return 'Lowes';
-  if (f.includes('home depot') || f.includes('homedepot') || t.includes('home depot')) return 'HomeDepot';
-  return 'Other';
-}
-
-function parseDateFromTextOrFilename(filename, text) {
-  // 1. YYYY-MM-DD in filename
-  const fnMatch = filename.match(/(20\d{2}-\d{2}-\d{2})/);
-  if (fnMatch) return fnMatch[1];
-
-  // 2. Month DD, YYYY
-  const months = {january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',july:'07',august:'08',september:'09',october:'10',november:'11',december:'12'};
-  const longMatch = text.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(20\d{2})/i);
-  if (longMatch) {
-    const m = months[longMatch[1].toLowerCase()];
-    const d = longMatch[2].padStart(2, '0');
-    return `${longMatch[3]}-${m}-${d}`;
-  }
-
-  // 3. MM/DD/YYYY
-  const slashMatch = text.match(/(\d{2})\/(\d{2})\/(20\d{2})/);
-  if (slashMatch) return `${slashMatch[3]}-${slashMatch[1]}-${slashMatch[2]}`;
-
-  return '2026-01-01';
-}
-
-function parseSamsReceipt(filename, text) {
-  const date = parseDateFromTextOrFilename(filename, text);
-  const orderMatch = text.match(/Receipt \/ Order #\s*([A-Z0-9 ]+)/i);
-  const orderId = orderMatch ? orderMatch[1].trim() : filename;
-  const typeMatch = text.match(/Type\s+(Scan & Go|In club|Shipping|Pickup)/i);
-  const orderType = typeMatch ? typeMatch[1] : 'In club';
-  const locMatch = text.match(/Location\s+([^
-]+)/i);
-  const location = locMatch ? locMatch[1].trim() : "Sam's Club";
-
-  const subMatch = text.match(/Subtotal\s+\$([\d,.]+)/i);
-  const savMatch = text.match(/Savings\s+-\$?([\d,.]+)/i);
-  const taxMatch = text.match(/Sales tax\s+\$([\d,.]+)/i);
-  const totMatch = text.match(/TOTAL\s+\$([\d,.]+)/i);
-
-  // Payment cards
-  const cards = [];
-  const cardRegex = /(Card ending \*?\d{4}|Sam's Cash)\s+\$([\d,.]+)/gi;
-  let cm;
-  while ((cm = cardRegex.exec(text)) !== null) {
-    cards.push(`${cm[1]} ($${cm[2]})`);
-  }
-
-  // Extract items between "Item Qty / Price Amount" and "Subtotal"
-  const items = [];
-  const bodyMatch = text.match(/Item\s+Qty\s*\/\s*Price\s+Amount([\s\S]*?)Subtotal\s+\$/i);
-  if (bodyMatch) {
-    const block = bodyMatch[1].trim();
-    // Split on price lines: e.g. "Qty 1 @ $9.88 $9.88" or "6.58 lb @ $2.88/lb $18.95"
-    const lines = block.split('
-').map(l => l.trim()).filter(Boolean);
-    let descBuf = [];
-    for (const line of lines) {
-      const qtyPriceMatch = line.match(/^(?:Shipment \d+\s*\|\s*)?(Qty\s+\d+\s+@\s+\$[\d,.]+|[\d.]+\s*lb\s+@\s+\$[\d,.]+\/lb)\s+\$([\d,.]+)$/i);
-      const lonePriceMatch = line.match(/^\$([\d,.]+)$/);
-      if (qtyPriceMatch) {
-        const desc = descBuf.join(' ').replace(/\$[\d,.]+\s+savings\s*\(was\s+\$[\d,.]+\)/i, '').trim();
-        const total = parseFloat(qtyPriceMatch[2].replace(/,/g, ''));
-        items.push({
-          desc: desc || 'Sam's Club Item',
-          qtyLabel: qtyPriceMatch[1],
-          unitPrice: total,
-          total,
-          category: categorizeItem(desc, 'Sams')
-        });
-        descBuf = [];
-      } else if (lonePriceMatch && descBuf.length > 0) {
-        const total = parseFloat(lonePriceMatch[1].replace(/,/g, ''));
-        const desc = descBuf.join(' ').trim();
-        items.push({
-          desc,
-          qtyLabel: 'Qty 1',
-          unitPrice: total,
-          total,
-          category: categorizeItem(desc, 'Sams')
-        });
-        descBuf = [];
-      } else {
-        descBuf.push(line);
-      }
-    }
-  }
-
-  const total = totMatch ? parseFloat(totMatch[1].replace(/,/g, '')) : items.reduce((s, i) => s + i.total, 0);
-  const subtotal = subMatch ? parseFloat(subMatch[1].replace(/,/g, '')) : total;
-  const savings = savMatch ? parseFloat(savMatch[1].replace(/,/g, '')) : 0;
-  const tax = taxMatch ? parseFloat(taxMatch[1].replace(/,/g, '')) : 0;
-
-  return {
-    id: filename,
-    filename,
-    store: 'Sams',
-    date,
-    orderId,
-    orderType,
-    location,
-    payment: cards.join(' + ') || 'Card',
-    subtotal,
-    savings,
-    tax,
-    total,
-    items
-  };
-}
-
-function parseCostcoReceipt(filename, text) {
-  const date = parseDateFromTextOrFilename(filename, text);
-  const whseMatch = text.match(/([A-Z]+\s+#\d+)/);
-  const location = whseMatch ? whseMatch[1] : 'Costco Warehouse';
-  const subMatch = text.match(/SUBTOTAL\s+([\d,.]+)/i);
-  const taxMatch = text.match(/TAX\s+([\d,.]+)/i);
-  const totMatch = text.match(/\*{4}\s*TOTAL\s+([\d,.]+)/i) || text.match(/TOTAL\s+([\d,.]+)/i);
-  const savMatch = text.match(/Instant Savings\s+\$?([\d,.]+)/i);
-  const cardMatch = text.match(/X+(\d{4})/);
-  const payment = cardMatch ? `Card ending *${cardMatch[1]}` : 'Costco Visa';
-
-  const items = [];
-  let savingsCalc = 0;
-  const lines = text.split('
-').map(l => l.trim()).filter(Boolean);
-  for (const line of lines) {
-    // Instant savings line: e.g. "318163 /1727803 4.00-"
-    const discMatch = line.match(/^\d+\s+\/\d+\s+([\d.]+)-$/);
-    if (discMatch) {
-      const disc = parseFloat(discMatch[1]);
-      savingsCalc += disc;
-      if (items.length > 0) {
-        items[items.length - 1].total = Math.max(0, +(items[items.length - 1].total - disc).toFixed(2));
-      }
-      continue;
-    }
-    // Item line: e.g. "1669885 BRIO AREARUG 99.99 Y"
-    const itemMatch = line.match(/^(\d{5,8})\s+(.+?)\s+([\d,]+\.\d{2})\s*[YNFE]?$/);
-    if (itemMatch) {
-      const sku = itemMatch[1];
-      const desc = `${itemMatch[2].replace(/\*/g, '').trim()} (#${sku})`;
-      const total = parseFloat(itemMatch[3].replace(/,/g, ''));
-      items.push({
-        desc,
-        qtyLabel: 'Qty 1',
-        unitPrice: total,
-        total,
-        category: categorizeItem(desc, 'Costco')
-      });
-    }
-  }
-
-  const total = totMatch ? parseFloat(totMatch[1].replace(/,/g, '')) : items.reduce((s, i) => s + i.total, 0);
-  const subtotal = subMatch ? parseFloat(subMatch[1].replace(/,/g, '')) : total;
-  const tax = taxMatch ? parseFloat(taxMatch[1].replace(/,/g, '')) : 0;
-  const savings = savMatch ? parseFloat(savMatch[1].replace(/,/g, '')) : savingsCalc;
-
-  return {
-    id: filename,
-    filename,
-    store: 'Costco',
-    date,
-    orderId: filename.replace(/\.pdf$/i, ''),
-    orderType: 'Warehouse',
-    location,
-    payment,
-    subtotal,
-    savings,
-    tax,
-    total,
-    items
-  };
-}
-
-function parseAmazonReceipt(filename, text) {
-  const date = parseDateFromTextOrFilename(filename, text);
-  const orderMatch = text.match(/Order #\s*(\d{3}-\d{7}-\d{7})/i);
-  const orderId = orderMatch ? orderMatch[1] : filename;
-  const subMatch = text.match(/Item\(s\) Subtotal:\s*\$([\d,.]+)/i);
-  const taxMatch = text.match(/Estimated tax to be collected:\s*\$([\d,.]+)/i) || text.match(/Tax:\s*\$([\d,.]+)/i);
-  const totMatch = text.match(/Grand Total:\s*\$([\d,.]+)/i);
-  const payMatch = text.match(/Payment method\s+([^
-]+)/i);
-  const payment = payMatch ? payMatch[1].split('Order Summary')[0].trim() : 'Amazon Card';
-
-  const items = [];
-  // Amazon text copies list product title, "Sold by: ...", then "$XX.XX $XX.XX" or "$XX.XX"
-  const afterSummary = text.split(/Grand Total:\s*\$[\d,.]+/i)[1] || text;
-  const chunks = afterSummary.split(/Sold by:/i);
-  for (let i = 0; i < chunks.length - 1; i++) {
-    const titlePart = chunks[i].trim().split('
-').pop().trim();
-    const pricePart = chunks[i + 1];
-    const pMatch = pricePart.match(/\$([\d,.]+)/);
-    if (titlePart && pMatch) {
-      const total = parseFloat(pMatch[1].replace(/,/g, ''));
-      items.push({
-        desc: titlePart,
-        qtyLabel: 'Qty 1',
-        unitPrice: total,
-        total,
-        category: categorizeItem(titlePart, 'Amazon')
-      });
-    }
-  }
-
-  const total = totMatch ? parseFloat(totMatch[1].replace(/,/g, '')) : items.reduce((s, i) => s + i.total, 0);
-  const subtotal = subMatch ? parseFloat(subMatch[1].replace(/,/g, '')) : total;
-  const tax = taxMatch ? parseFloat(taxMatch[1].replace(/,/g, '')) : 0;
-
-  return {
-    id: filename,
-    filename,
-    store: 'Amazon',
-    date,
-    orderId,
-    orderType: 'Online Order',
-    location: 'Amazon.com',
-    payment,
-    subtotal,
-    savings: 0,
-    tax,
-    total,
-    items
-  };
-}
-
-function parseGenericReceipt(filename, text, store) {
-  const date = parseDateFromTextOrFilename(filename, text);
-  const totMatch = text.match(/(?:Grand Total|TOTAL|Amount Charged|Order Total)\s*:?\s*\$?([\d,]+\.\d{2})/i);
-  const taxMatch = text.match(/(?:Sales Tax|TAX|Estimated Tax)\s*:?\s*\$?([\d,]+\.\d{2})/i);
-  const total = totMatch ? parseFloat(totMatch[1].replace(/,/g, '')) : 0;
-  const tax = taxMatch ? parseFloat(taxMatch[1].replace(/,/g, '')) : 0;
-  const subtotal = +(total - tax).toFixed(2);
-
-  const items = [];
-  const lines = text.split('
-').map(l => l.trim()).filter(Boolean);
-  for (const line of lines) {
-    if (/subtotal|tax|total|change|approved|visa|mastercard|amex|discover|payment|balance|savings/i.test(line)) continue;
-    const m = line.match(/^(.{4,65}?)\s+\$?([\d,]+\.\d{2})$/);
-    if (m) {
-      const price = parseFloat(m[2].replace(/,/g, ''));
-      if (price > 0 && price <= total) {
-        items.push({
-          desc: m[1].trim(),
-          qtyLabel: 'Qty 1',
-          unitPrice: price,
-          total: price,
-          category: categorizeItem(m[1], store)
-        });
-      }
-    }
-  }
-
-  if (items.length === 0 && total > 0) {
-    items.push({
-      desc: `${store} Purchase (${filename.replace(/\.pdf$/i, '')})`,
-      qtyLabel: 'Qty 1',
-      unitPrice: subtotal || total,
-      total: subtotal || total,
-      category: categorizeItem(filename, store)
-    });
-  }
-
-  return {
-    id: filename,
-    filename,
-    store,
-    date,
-    orderId: filename.replace(/\.pdf$/i, ''),
-    orderType: 'Receipt',
-    location: store,
-    payment: 'Card',
-    subtotal: subtotal || total,
-    savings: 0,
-    tax,
-    total,
-    items
-  };
-}
-
-async function extractPdfText(file) {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  let fullText = '';
-  for (let p = 1; p <= pdf.numPages; p++) {
-    const page = await pdf.getPage(p);
-    const content = await page.getTextContent();
-    // Preserve line breaks using Y coordinate jumps
-    let lastY = null;
-    let pageLines = [];
-    let currentLine = [];
-    for (const item of content.items) {
-      const y = Math.round(item.transform[5]);
-      if (lastY !== null && Math.abs(y - lastY) > 4) {
-        pageLines.push(currentLine.join(' '));
-        currentLine = [];
-      }
-      currentLine.push(item.str);
-      lastY = y;
-    }
-    if (currentLine.length) pageLines.push(currentLine.join(' '));
-    fullText += pageLines.join('
-') + '
-';
-  }
-  return fullText;
-}
-
-async function handlePdfFiles(fileList) {
-  const pdfs = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.pdf'));
-  if (!pdfs.length) {
-    alert('No PDF files found in the selected folder.');
-    return;
-  }
-
-  const existingIds = new Set(allReceipts.map(r => r.id));
-  const newFiles = pdfs.filter(f => !existingIds.has(f.name));
-
-  const progWrap = document.getElementById('importProgressWrap');
-  const progText = document.getElementById('importProgressText');
-  const progPct = document.getElementById('importProgressPct');
-  const progFill = document.getElementById('importProgressFill');
-  progWrap.style.display = 'block';
-
-  if (newFiles.length === 0) {
-    progText.textContent = `All ${pdfs.length} PDFs are already indexed!`;
-    progPct.textContent = '100%';
-    progFill.style.width = '100%';
-    return;
-  }
-
-  const batch = [];
-  for (let i = 0; i < newFiles.length; i++) {
-    const file = newFiles[i];
-    const pct = Math.round(((i + 1) / newFiles.length) * 100);
-    progText.textContent = `Parsing ${i + 1} of ${newFiles.length}: ${file.name}`;
-    progPct.textContent = `${pct}%`;
-    progFill.style.width = `${pct}%`;
-
-    try {
-      const text = await extractPdfText(file);
-      const store = detectStore(file.name, text);
-      let parsed;
-      if (store === 'Sams') parsed = parseSamsReceipt(file.name, text);
-      else if (store === 'Costco') parsed = parseCostcoReceipt(file.name, text);
-      else if (store === 'Amazon') parsed = parseAmazonReceipt(file.name, text);
-      else parsed = parseGenericReceipt(file.name, text, store);
-      batch.push(parsed);
-    } catch (err) {
-      console.error('Failed to parse', file.name, err);
-    }
-
-    if (batch.length >= 100) {
-      await idbPutMany(batch.splice(0, batch.length));
-    }
-  }
-
-  if (batch.length > 0) {
-    await idbPutMany(batch);
-  }
-
-  allReceipts = await idbGetAll();
-  progText.textContent = `Done! Added ${newFiles.length} new receipts (${pdfs.length - newFiles.length} already indexed).`;
-  refreshAllViews();
-
-  if (fbDb) {
-    pushRecentToFirebase(newFiles.map(f => f.name));
-  }
-}
-
-// ==========================================
-// 4. SAMPLE DATA FROM GLENN'S REAL FORMATS
-// ==========================================
-async function loadSampleData() {
-  const samples = [
-    {
-      id: '2023-12-10-Costco-Warehouse-1211pm.pdf',
-      filename: '2023-12-10-Costco-Warehouse-1211pm.pdf',
-      store: 'Costco',
-      date: '2023-12-10',
-      orderId: '21133000500922312101211',
-      orderType: 'Warehouse',
-      location: 'WEBSTER #1330',
-      payment: 'Card ending *2326',
-      subtotal: 236.20,
-      savings: 4.00,
-      tax: 19.49,
-      total: 255.69,
-      items: [
-        { desc: 'BRIO AREARUG (#1669885)', qtyLabel: 'Qty 1', unitPrice: 99.99, total: 99.99, category: 'Household & Paper' },
-        { desc: 'CHARMIN RD (#2427647)', qtyLabel: 'Qty 1', unitPrice: 26.79, total: 26.79, category: 'Household & Paper' },
-        { desc: 'CRINKLE QN (#1756422)', qtyLabel: 'Qty 1', unitPrice: 39.99, total: 39.99, category: 'Household & Paper' },
-        { desc: 'BATH TOWEL (#1727803)', qtyLabel: 'Qty 2', unitPrice: 10.99, total: 17.98, category: 'Household & Paper' },
-        { desc: 'KS TOWEL (#1742835)', qtyLabel: 'Qty 1', unitPrice: 19.49, total: 19.49, category: 'Household & Paper' },
-        { desc: 'SHOWER SET (#1727311)', qtyLabel: 'Qty 1', unitPrice: 21.99, total: 21.99, category: 'Household & Paper' },
-        { desc: 'KITCHEN TWL (#1742343)', qtyLabel: 'Qty 1', unitPrice: 9.97, total: 9.97, category: 'Household & Paper' }
-      ]
-    },
-    {
-      id: '2022-03-20 Sams Club In club 538680.pdf',
-      filename: '2022-03-20 Sams Club In club 538680.pdf',
-      store: 'Sams',
-      date: '2022-03-20',
-      orderId: 'TC 4237 8760 6531 7725 3868 0',
-      orderType: 'In club',
-      location: "Friendswood Sam's Club",
-      payment: 'Card ending *9282',
-      subtotal: 500.96,
-      savings: 0,
-      tax: 33.00,
-      total: 533.96,
-      items: [
-        { desc: 'Georges Farmers Market Boneless and Skinless Chicken Breasts', qtyLabel: '5.42 lb @ $2.88/lb', unitPrice: 2.88, total: 15.61, category: 'Groceries & Meat' },
-        { desc: 'Steak-EZE Sirloin Steak Strips, Frozen (42 oz.)', qtyLabel: 'Qty 1', unitPrice: 17.98, total: 17.98, category: 'Groceries & Meat' },
-        { desc: 'Minh Large Pork Egg Rolls, Frozen, 44 oz., 16 ct.', qtyLabel: 'Qty 1', unitPrice: 8.28, total: 8.28, category: 'Groceries & Meat' },
-        { desc: 'Tim Hortons Original Blend Ground Coffee, Medium Roast, 32 oz.', qtyLabel: 'Qty 1', unitPrice: 13.28, total: 13.28, category: 'Groceries & Meat' },
-        { desc: "Member's Mark 99% Pure Chlorine Tablets, 40 lbs", qtyLabel: 'Qty 2 @ $199.98', unitPrice: 199.98, total: 399.96, category: 'Pool & Patio' },
-        { desc: "Kinder's Bourbon Peach Premium Rub and Seasoning, 9 oz.", qtyLabel: 'Qty 1', unitPrice: 4.98, total: 4.98, category: 'Groceries & Meat' },
-        { desc: "Kinder's Prime Steak with Black Garlic and Truffle Seasoning", qtyLabel: 'Qty 1', unitPrice: 6.98, total: 6.98, category: 'Groceries & Meat' },
-        { desc: "Member's Mark Extra Virgin Olive Oil, 101 fl. oz.", qtyLabel: 'Qty 1', unitPrice: 15.48, total: 15.48, category: 'Groceries & Meat' }
-      ]
-    },
-    {
-      id: '2021-10-30-Amazon-112-6408436-0800229.pdf',
-      filename: '2021-10-30-Amazon-112-6408436-0800229.pdf',
-      store: 'Amazon',
-      date: '2021-10-30',
-      orderId: '112-6408436-0800229',
-      orderType: 'Online Order',
-      location: 'Amazon.com',
-      payment: 'Amazon Gift Card + Slate Visa *8852',
-      subtotal: 66.97,
-      savings: 0,
-      tax: 5.52,
-      total: 72.49,
-      items: [
-        { desc: 'Wilton 3-D Sports Ball 6-Inch Aluminum Cake Pan Set', qtyLabel: 'Qty 1', unitPrice: 11.99, total: 11.99, category: 'Groceries & Meat' },
-        { desc: 'Baseus Monitor Light Bar, USB Powered LED Computer Light', qtyLabel: 'Qty 1', unitPrice: 37.99, total: 37.99, category: 'Electronics & Tech' },
-        { desc: 'Etekcity Power Extension Cord Short Cable (10 Pack, 8 Inch)', qtyLabel: 'Qty 1', unitPrice: 16.99, total: 16.99, category: 'Electronics & Tech' }
-      ]
-    },
-    {
-      id: '2023-07-02 Sams Club Scan and Go 045996.pdf',
-      filename: '2023-07-02 Sams Club Scan and Go 045996.pdf',
-      store: 'Sams',
-      date: '2023-07-02',
-      orderId: 'TC 3054 5364 1134 3510 4599 6',
-      orderType: 'Scan & Go',
-      location: "Friendswood Sam's Club",
-      payment: 'Card ending *2326',
-      subtotal: 220.29,
-      savings: 0,
-      tax: 14.52,
-      total: 234.81,
-      items: [
-        { desc: 'Minh Large Pork Egg Rolls, Frozen, 44 oz., 16 ct.', qtyLabel: 'Qty 1', unitPrice: 9.88, total: 9.88, category: 'Groceries & Meat' },
-        { desc: 'HOUSTON ASTROS FN MLB PDQ LADYS TEE', qtyLabel: 'Qty 1', unitPrice: 17.98, total: 17.98, category: 'Clothing & Apparel' },
-        { desc: 'HOUSTON ASTROS DY MLB JERSEY', qtyLabel: 'Qty 1', unitPrice: 28.98, total: 28.98, category: 'Clothing & Apparel' },
-        { desc: "Member's Mark Men's Resort Swim Trunks (x3)", qtyLabel: 'Qty 3 @ $12.98', unitPrice: 12.98, total: 38.94, category: 'Clothing & Apparel' },
-        { desc: 'McCafe Bakery K-Cup Coffee Pods, Variety Pack (50 ct.)', qtyLabel: 'Qty 1', unitPrice: 21.98, total: 21.98, category: 'Groceries & Meat' },
-        { desc: 'ThermoPro Truly Wireless Bluetooth Grill Thermometer Bundle', qtyLabel: 'Qty 1', unitPrice: 69.98, total: 69.98, category: 'Electronics & Tech' },
-        { desc: 'Budweiser Marinade, Variety Pack (60 oz., 2 pk.)', qtyLabel: 'Qty 1', unitPrice: 3.91, total: 3.91, category: 'Groceries & Meat' },
-        { desc: 'Idahoan Real Premium Mashed Potatoes, 3.25 lbs.', qtyLabel: 'Qty 1', unitPrice: 8.58, total: 8.58, category: 'Groceries & Meat' }
-      ]
-    }
+  const CATEGORIES = [
+    'Groceries & Meat', 'Household & Paper', 'Pool & Patio', 'Home Improvement',
+    'Electronics & Tech', 'Clothing & Apparel', 'Health & Personal Care',
+    'Pets (Phil & Chuck)', 'Crafting & Maker', 'Dining & Beverages', 'Gifts & Seasonal', 'Other'
   ];
 
-  await idbPutMany(samples);
-  allReceipts = await idbGetAll();
-  refreshAllViews();
-  switchTab('dashboard');
-}
+  let idb = null, receipts = [], fbDb = null, fbUnsub = null, modalId = null;
+  let overrides = JSON.parse(localStorage.getItem(LS_OVR) || '{}');
+  let notes = JSON.parse(localStorage.getItem(LS_NOTE) || '{}');
+  let curView = 'search', curStore = 'ALL', itemsLimit = 60, receiptsLimit = 45;
 
-// ==========================================
-// 5. FIREBASE / FIRESTORE CLOUD SYNC
-// ==========================================
-function setSyncIndicator(state, label) {
-  const dot = document.getElementById('syncDot');
-  const lbl = document.getElementById('syncLabel');
-  const badge = document.getElementById('fbModeBadge');
-  dot.className = 'sync-dot' + (state === 'online' ? ' online' : state === 'syncing' ? ' syncing' : '');
-  lbl.textContent = label;
-  if (badge) badge.textContent = label;
-}
-
-function initFirebaseFromStorage() {
-  const rawCfg = localStorage.getItem(LS_FB_CFG);
-  const room = localStorage.getItem(LS_FB_ROOM) || 'armbruster-receipts-vault';
-  document.getElementById('fbRoomId').value = room;
-  if (!rawCfg) return;
-  document.getElementById('fbConfigInput').value = rawCfg;
-
-  try {
-    const cfg = JSON.parse(rawCfg);
-    if (!firebase.apps.length) {
-      firebase.initializeApp(cfg);
-    }
-    fbDb = firebase.firestore();
-    if (firebase.auth) {
-      firebase.auth().signInAnonymously().catch(() => {});
-    }
-    setSyncIndicator('online', 'Cloud Synced');
-    attachFirebaseListeners(room);
-  } catch (e) {
-    console.error('Firebase init error:', e);
-    setSyncIndicator('offline', 'Config Error');
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   }
-}
 
-function saveAndConnectFirebase() {
-  const raw = document.getElementById('fbConfigInput').value.trim();
-  const room = document.getElementById('fbRoomId').value.trim() || 'armbruster-receipts-vault';
-  if (!raw) {
-    alert('Please paste your Firebase config JSON first.');
-    return;
+  function openDB() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open(DB_NAME, 1);
+      r.onupgradeneeded = e => e.target.result.createObjectStore(STORE, { keyPath: 'id' });
+      r.onsuccess = () => { idb = r.result; res(idb); };
+      r.onerror = () => rej(r.error);
+    });
   }
-  try {
-    JSON.parse(raw);
-    localStorage.setItem(LS_FB_CFG, raw);
-    localStorage.setItem(LS_FB_ROOM, room);
-    initFirebaseFromStorage();
-    document.getElementById('fbStatusMsg').textContent = `Connected to Firestore room "${room}".`;
-  } catch (e) {
-    alert('Invalid JSON format in Firebase config.');
-  }
-}
-
-function attachFirebaseListeners(room) {
-  if (!fbDb) return;
-  if (fbUnsubscribe) fbUnsubscribe();
-
-  const metaRef = fbDb.collection('goobs_receipts').doc(room);
-  fbUnsubscribe = metaRef.onSnapshot((snap) => {
-    if (!snap.exists) return;
-    const data = snap.data();
-    if (data.catOverrides) {
-      catOverrides = { ...catOverrides, ...data.catOverrides };
-      localStorage.setItem(LS_OVERRIDES, JSON.stringify(catOverrides));
-    }
-    if (data.receiptNotes) {
-      receiptNotes = { ...receiptNotes, ...data.receiptNotes };
-      localStorage.setItem(LS_NOTES, JSON.stringify(receiptNotes));
-    }
-    reapplyCategoryOverrides();
-    refreshAllViews();
+  const dbGetAll = () => new Promise((res, rej) => {
+    const req = idb.transaction(STORE, 'readonly').objectStore(STORE).getAll();
+    req.onsuccess = () => res(req.result || []);
+    req.onerror = () => rej(req.error);
   });
-}
+  const dbPutMany = list => new Promise((res, rej) => {
+    const tx = idb.transaction(STORE, 'readwrite');
+    const st = tx.objectStore(STORE);
+    list.forEach(x => st.put(x));
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
+  const dbClear = () => new Promise((res, rej) => {
+    const tx = idb.transaction(STORE, 'readwrite');
+    tx.objectStore(STORE).clear();
+    tx.oncomplete = () => res();
+    tx.onerror = () => rej(tx.error);
+  });
 
-async function syncMetadataToFirebase() {
-  if (!fbDb) return;
-  const room = localStorage.getItem(LS_FB_ROOM) || 'armbruster-receipts-vault';
-  setSyncIndicator('syncing', 'Syncing...');
-  try {
-    await fbDb.collection('goobs_receipts').doc(room).set({
-      catOverrides,
-      receiptNotes,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-    setSyncIndicator('online', 'Cloud Synced');
-  } catch (e) {
-    console.error(e);
-    setSyncIndicator('offline', 'Sync Error');
+  const normKey = s => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const fmtMoney = n => '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const storeLabel = s => s === 'Sams' ? "Sam's" : s === 'HomeDepot' ? 'Home Depot' : s === 'Lowes' ? "Lowe's" : s;
+
+  function fmtDate(iso) {
+    if (!iso || iso.length < 10) return iso || '';
+    const m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const [y, mo, d] = iso.slice(0, 10).split('-');
+    return `${m[parseInt(mo,10)-1] || mo} ${parseInt(d,10)}, ${y}`;
   }
-}
 
-async function pushAllToFirebase() {
-  if (!fbDb) {
-    alert('Connect Firebase first using your config JSON above.');
-    return;
+  function catItem(desc, store) {
+    const k = normKey(desc);
+    if (overrides[k]) return overrides[k];
+    if (/cat food|friskies|temptations|cat litter|scratcher|catnip/.test(k)) return 'Pets (Phil & Chuck)';
+    if (/chlorine|pool|float|lounger|citronella|sprinkler|patio|grill cover|deck box|sunshade|water blaster/.test(k)) return 'Pool & Patio';
+    if (/chicken|wing|beef|turkey|shrimp|salmon|crab|lobster|cod|fillet|pork|ham|brisket|bacon|sausage|steak|tilapia|meatball|cheese|milk|cream|egg|potato|mushroom|spinach|broccoli|orange|grape|blueberr|pomegranate|bread|tortilla|buns|pasta|ravioli|tortellini|soup|salsa|queso|hummus|guacamole|olive|pickle|ketchup|sauce|seasoning|rub|marinade|coffee|k cup|popcorn|chips|cracker|goldfish|pretzel|candy|chocolate|pizza|egg roll|sushi|salad|maple syrup|butter|yogurt|granola|almond|pistachio|peanut butter|anthm|lav gran|branch s can/.test(k)) return 'Groceries & Meat';
+    if (/soda|coca cola|zevia|gatorade|lemonade|sunnyd|water|wine|hard lemonade|drink/.test(k)) return 'Dining & Beverages';
+    if (/charmin|bounty|paper towel|toilet paper|tissue|trash bag|clean up bag|chinet|paper plate|paper bowl|cutlery|dawn|tide|detergent|airwick|freshener|storage container|hefty|hanger|mop|bissell|vacuum|rug|towel|shower|quilt/.test(k)) return 'Household & Paper';
+    if (/fire tv|alexa|ninja crispi|usb|hdmi|cable|charger|monitor|light bar|extension cord|outlet|thermometer|bluetooth|microwave|gaming chair|turbotax|battery|camera|router|sd card/.test(k)) return 'Electronics & Tech';
+    if (/glue gun|glue stick|paint set|cricut|filament|sublimation|vinyl|craft|ribbon/.test(k)) return 'Crafting & Maker';
+    if (/duct tape|weed|grass killer|ortho|lumber|drill|saw|wrench|screw|bolt|paint|primer|faucet|valve|pipe|filter|mulch|fertilizer/.test(k)) return 'Home Improvement';
+    if (/shirt|tee|jersey|jacket|pant|cargo|shorts|swim trunk|sweater|shoes|skechers|slip on|sock|hat|glasses|fitsover/.test(k)) return 'Clothing & Apparel';
+    if (/pharmacy|prescription|tampon|tampax|pad|always|liner|acetaminophen|ibuprofen|toothbrush|colgate|shampoo|conditioner|dove|body wash|everyman jack|razor|lotion|vitamin|medicine/.test(k)) return 'Health & Personal Care';
+    if (/ornament|snowman|wreath|garland|halloween|christmas|roll wrap|lego|pokemon|disney|toy|game|puzzle|stamp|bouquet/.test(k)) return 'Gifts & Seasonal';
+    if (store === 'HomeDepot' || store === 'Lowes') return 'Home Improvement';
+    return 'Other';
   }
-  const room = localStorage.getItem(LS_FB_ROOM) || 'armbruster-receipts-vault';
-  setSyncIndicator('syncing', 'Uploading...');
-  const status = document.getElementById('fbStatusMsg');
-  status.textContent = `Uploading ${allReceipts.length} receipts to Firestore...`;
 
-  try {
-    await syncMetadataToFirebase();
-    const colRef = fbDb.collection('goobs_receipts').doc(room).collection('items');
-    let batch = fbDb.batch();
-    let count = 0;
-    for (const r of allReceipts) {
-      const docId = r.id.replace(/[\/.#$\[\]]/g, '_');
-      batch.set(colRef.doc(docId), r);
-      count++;
-      if (count % 400 === 0) {
-        await batch.commit();
-        batch = fbDb.batch();
+  function detectStore(fn, txt) {
+    const f = fn.toLowerCase(), t = txt.toLowerCase();
+    if (f.includes('sams') || t.includes("sam's club") || t.includes('samsclub.com')) return 'Sams';
+    if (f.includes('costco') || t.includes('costco.com') || t.includes('whse:')) return 'Costco';
+    if (f.includes('amazon') || t.includes('amazon.com') || /order #\s*\d{3}-\d{7}-\d{7}/.test(t)) return 'Amazon';
+    if (f.includes('lowes') || f.includes("lowe's") || t.includes("lowe's")) return 'Lowes';
+    if (f.includes('home depot') || f.includes('homedepot') || t.includes('home depot')) return 'HomeDepot';
+    return 'Other';
+  }
+
+  function parseDate(fn, txt) {
+    const m1 = fn.match(/(20\d{2}-\d{2}-\d{2})/);
+    if (m1) return m1[1];
+    const months = {january:'01',february:'02',march:'03',april:'04',may:'05',june:'06',july:'07',august:'08',september:'09',october:'10',november:'11',december:'12'};
+    const m2 = txt.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),\s+(20\d{2})/i);
+    if (m2) return `${m2[3]}-${months[m2[1].toLowerCase()]}-${m2[2].padStart(2,'0')}`;
+    const m3 = txt.match(/(\d{2})\/(\d{2})\/(20\d{2})/);
+    if (m3) return `${m3[3]}-${m3[1]}-${m3[2]}`;
+    return '2026-01-01';
+  }
+
+  function parseSams(fn, txt) {
+    const date = parseDate(fn, txt);
+    const orderId = (txt.match(/Receipt \/ Order #\s*([A-Z0-9 ]+)/i) || [])[1]?.trim() || fn.replace(/\.pdf$/i,'');
+    const location = (txt.match(/Location\s+([^\n]+)/i) || [])[1]?.trim() || "Sam's Club";
+    const cards = [];
+    const cr = /(Card ending \*?\d{4}|Sam's Cash)\s+\$([\d,.]+)/gi; let cm;
+    while ((cm = cr.exec(txt)) !== null) cards.push(cm[1].replace('*', ''));
+    const payment = cards.length ? cards.join(' + ') : 'Card';
+
+    const items = [];
+    const body = (txt.match(/Item\s+Qty\s*\/\s*Price\s+Amount([\s\S]*?)Subtotal\s+\$/i) || [])[1];
+    if (body) {
+      let buf = [];
+      for (const line of body.trim().split('\n').map(l => l.trim()).filter(Boolean)) {
+        const qp = line.match(/^(?:Shipment \d+\s*\|\s*)?(Qty\s+\d+\s+@\s+\$[\d,.]+|[\d.]+\s*lb\s+@\s+\$[\d,.]+\/lb)\s+\$([\d,.]+)$/i);
+        const lp = line.match(/^\$([\d,.]+)$/);
+        if (qp) {
+          const raw = buf.join(' ');
+          const sav = parseFloat((raw.match(/\$([\d,.]+)\s+savings\s*\(was\s+\$[\d,.]+\)/i) || [])[1] || 0);
+          const desc = raw.replace(/\$[\d,.]+\s+savings\s*\(was\s+\$[\d,.]+\)/i, '').trim();
+          const sku = (desc.match(/#\s*(\d{5,10})/) || [])[1] || '';
+          const clean = desc.replace(/#\s*\d{5,10}/, '').trim();
+          const total = parseFloat(qp[2].replace(/,/g, ''));
+          items.push({ desc: clean || "Sam's Item", sku, qtyLabel: qp[1], unitPrice: total, total, discount: sav, category: catItem(clean, 'Sams') });
+          buf = [];
+        } else if (lp && buf.length) {
+          const total = parseFloat(lp[1].replace(/,/g, ''));
+          const desc = buf.join(' ').trim();
+          items.push({ desc, sku: '', qtyLabel: 'Qty 1', unitPrice: total, total, discount: 0, category: catItem(desc, 'Sams') });
+          buf = [];
+        } else buf.push(line);
       }
     }
-    if (count % 400 !== 0) await batch.commit();
-    status.textContent = `Uploaded ${count} receipts + category rules to cloud!`;
-    setSyncIndicator('online', 'Cloud Synced');
-  } catch (e) {
-    status.textContent = 'Upload failed: ' + e.message;
-    setSyncIndicator('offline', 'Sync Error');
+    const total = parseFloat(((txt.match(/TOTAL\s+\$([\d,.]+)/i) || [])[1] || '0').replace(/,/g,'')) || items.reduce((s,i)=>s+i.total,0);
+    const subtotal = parseFloat(((txt.match(/Subtotal\s+\$([\d,.]+)/i) || [])[1] || total).toString().replace(/,/g,''));
+    const savings = parseFloat(((txt.match(/Savings\s+-\$?([\d,.]+)/i) || [])[1] || '0').replace(/,/g,''));
+    const tax = parseFloat(((txt.match(/Sales tax\s+\$([\d,.]+)/i) || [])[1] || '0').replace(/,/g,''));
+    return { id: fn, filename: fn, store: 'Sams', date, orderId, location, payment, subtotal, savings, tax, total, items };
   }
-}
 
-async function pushRecentToFirebase(ids) {
-  if (!fbDb) return;
-  const room = localStorage.getItem(LS_FB_ROOM) || 'armbruster-receipts-vault';
-  const idSet = new Set(ids);
-  const subset = allReceipts.filter(r => idSet.has(r.id));
-  const colRef = fbDb.collection('goobs_receipts').doc(room).collection('items');
-  let batch = fbDb.batch();
-  let c = 0;
-  for (const r of subset) {
-    const docId = r.id.replace(/[\/.#$\[\]]/g, '_');
-    batch.set(colRef.doc(docId), r);
-    c++;
-    if (c % 400 === 0) { await batch.commit(); batch = fbDb.batch(); }
-  }
-  if (c % 400 !== 0) await batch.commit();
-}
-
-async function pullFromFirebase() {
-  if (!fbDb) {
-    alert('Connect Firebase first using your config JSON above.');
-    return;
-  }
-  const room = localStorage.getItem(LS_FB_ROOM) || 'armbruster-receipts-vault';
-  setSyncIndicator('syncing', 'Downloading...');
-  const status = document.getElementById('fbStatusMsg');
-  try {
-    const snap = await fbDb.collection('goobs_receipts').doc(room).collection('items').get();
-    const pulled = [];
-    snap.forEach(doc => pulled.push(doc.data()));
-    if (pulled.length > 0) {
-      await idbPutMany(pulled);
-      allReceipts = await idbGetAll();
-      reapplyCategoryOverrides();
-      refreshAllViews();
-    }
-    status.textContent = `Pulled ${pulled.length} receipts from Firestore!`;
-    setSyncIndicator('online', 'Cloud Synced');
-  } catch (e) {
-    status.textContent = 'Pull failed: ' + e.message;
-    setSyncIndicator('offline', 'Sync Error');
-  }
-}
-
-// ==========================================
-// 6. UI RENDERING & ANALYTICS
-// ==========================================
-function fmtMoney(n) {
-  return '$' + (Number(n) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-
-function reapplyCategoryOverrides() {
-  for (const r of allReceipts) {
-    for (const it of (r.items || [])) {
-      it.category = categorizeItem(it.desc, r.store);
-    }
-  }
-}
-
-function populateFilterDropdowns() {
-  const years = [...new Set(allReceipts.map(r => (r.date || '').slice(0, 4)).filter(Boolean))].sort().reverse();
-  const stores = [...new Set(allReceipts.map(r => r.store).filter(Boolean))].sort();
-  const cards = [...new Set(allReceipts.map(r => r.payment).filter(Boolean))].sort();
-
-  const fillSelect = (id, items, defaultLabel) => {
-    const el = document.getElementById(id);
-    const prev = el.value;
-    el.innerHTML = `<option value="ALL">${defaultLabel}</option>` + items.map(v => `<option value="${v}">${v}</option>`).join('');
-    if (items.includes(prev)) el.value = prev;
-  };
-
-  fillSelect('dashYearFilter', years, 'All Years');
-  fillSelect('dashStoreFilter', stores, 'All Stores');
-  fillSelect('dashCardFilter', cards, 'All Payment Methods');
-  fillSelect('receiptStoreFilter', stores, 'All Stores');
-  fillSelect('receiptYearFilter', years, 'All Years');
-  fillSelect('itemStoreFilter', stores, 'All Stores');
-  fillSelect('itemCategoryFilter', CATEGORIES, 'All Categories');
-}
-
-function renderBars(containerId, entries, colorVar = 'var(--primary)') {
-  const el = document.getElementById(containerId);
-  if (!entries.length) {
-    el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">No receipt data yet. Import a folder in the Import &amp; Sync tab or load sample receipts.</div>';
-    return;
-  }
-  const max = Math.max(...entries.map(e => e[1]), 1);
-  el.innerHTML = entries.map(([label, val]) => {
-    const pct = Math.max(2, Math.round((val / max) * 100));
-    return `
-      <div class="bar-row">
-        <div class="bar-meta">
-          <span>${label}</span>
-          <span>${fmtMoney(val)}</span>
-        </div>
-        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${colorVar};"></div></div>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderDashboard() {
-  const y = document.getElementById('dashYearFilter').value;
-  const s = document.getElementById('dashStoreFilter').value;
-  const c = document.getElementById('dashCardFilter').value;
-
-  const filtered = allReceipts.filter(r => {
-    if (y !== 'ALL' && !(r.date || '').startsWith(y)) return false;
-    if (s !== 'ALL' && r.store !== s) return false;
-    if (c !== 'ALL' && r.payment !== c) return false;
-    return true;
-  });
-
-  const totalSpend = filtered.reduce((sum, r) => sum + (r.total || 0), 0);
-  const totalSavings = filtered.reduce((sum, r) => sum + (r.savings || 0), 0);
-  const totalTax = filtered.reduce((sum, r) => sum + (r.tax || 0), 0);
-  const totalItems = filtered.reduce((sum, r) => sum + (r.items ? r.items.length : 0), 0);
-
-  document.getElementById('kpiTotalSpend').textContent = fmtMoney(totalSpend);
-  document.getElementById('kpiReceiptCount').textContent = `${filtered.length.toLocaleString()} receipts indexed`;
-  document.getElementById('kpiItemCount').textContent = totalItems.toLocaleString();
-  document.getElementById('kpiAvgBasket').textContent = `${fmtMoney(filtered.length ? totalSpend / filtered.length : 0)} avg receipt`;
-  document.getElementById('kpiSavings').textContent = fmtMoney(totalSavings);
-  document.getElementById('kpiTax').textContent = fmtMoney(totalTax);
-  const effRate = totalSpend > 0 ? ((totalTax / (totalSpend - totalTax)) * 100).toFixed(1) : '0.0';
-  document.getElementById('kpiEffectiveTax').textContent = `${effRate}% effective rate`;
-
-  // Category aggregation (itemized split!)
-  const catMap = {};
-  const storeMap = {};
-  const cardMap = {};
-  const monthMap = {};
-
-  for (const r of filtered) {
-    storeMap[r.store] = (storeMap[r.store] || 0) + (r.total || 0);
-    const payKey = r.payment || 'Unknown';
-    cardMap[payKey] = (cardMap[payKey] || 0) + (r.total || 0);
-    const ym = (r.date || '2026-01').slice(0, 7);
-    monthMap[ym] = (monthMap[ym] || 0) + (r.total || 0);
-
-    if (r.items && r.items.length > 0) {
-      for (const it of r.items) {
-        const cat = categorizeItem(it.desc, r.store);
-        catMap[cat] = (catMap[cat] || 0) + (it.total || 0);
+  function parseCostco(fn, txt) {
+    const date = parseDate(fn, txt);
+    const location = (txt.match(/([A-Z]+\s+#\d+)/) || [])[1] || 'Costco Warehouse';
+    const card = (txt.match(/X+(\d{4})/) || [])[1];
+    const payment = card ? `Card ending in ${card}` : 'Costco Visa';
+    const items = []; let savCalc = 0;
+    for (const line of txt.split('\n').map(l => l.trim()).filter(Boolean)) {
+      const dm = line.match(/^\d+\s+\/\d+\s+([\d.]+)-$/);
+      if (dm) {
+        const d = parseFloat(dm[1]); savCalc += d;
+        if (items.length) { const p = items[items.length-1]; p.total = Math.max(0, +(p.total - d).toFixed(2)); p.discount = +((p.discount||0)+d).toFixed(2); }
+        continue;
       }
-    } else {
-      catMap['Other'] = (catMap['Other'] || 0) + (r.total || 0);
+      const im = line.match(/^(\d{4,8})\s+(.+?)\s+([\d,]+\.\d{2})\s*[YNFE]?$/);
+      if (im) {
+        const sku = im[1], desc = im[2].replace(/\*/g,'').trim(), total = parseFloat(im[3].replace(/,/g,''));
+        items.push({ desc, sku, qtyLabel: 'Qty 1', unitPrice: total, total, discount: 0, category: catItem(desc, 'Costco') });
+      }
     }
+    const total = parseFloat(((txt.match(/\*{4}\s*TOTAL\s+([\d,.]+)/i) || txt.match(/TOTAL\s+([\d,.]+)/i) || [])[1] || '0').replace(/,/g,'')) || items.reduce((s,i)=>s+i.total,0);
+    const subtotal = parseFloat(((txt.match(/SUBTOTAL\s+([\d,.]+)/i) || [])[1] || total).toString().replace(/,/g,''));
+    const tax = parseFloat(((txt.match(/TAX\s+([\d,.]+)/i) || [])[1] || '0').replace(/,/g,''));
+    const savings = parseFloat(((txt.match(/Instant Savings\s+\$?([\d,.]+)/i) || [])[1] || savCalc).toString().replace(/,/g,''));
+    return { id: fn, filename: fn, store: 'Costco', date, orderId: fn.replace(/\.pdf$/i,''), location, payment, subtotal, savings, tax, total, items };
   }
 
-  renderBars('categoryBars', Object.entries(catMap).sort((a, b) => b[1] - a[1]), 'var(--primary)');
-  renderBars('storeBars', Object.entries(storeMap).sort((a, b) => b[1] - a[1]), 'var(--accent)');
-  renderBars('cardBars', Object.entries(cardMap).sort((a, b) => b[1] - a[1]).slice(0, 6), 'var(--warn)');
-  renderBars('monthlyBars', Object.entries(monthMap).sort((a, b) => b[0].localeCompare(a[0])).slice(0, 12), 'var(--primary)');
-}
-
-function renderReceiptsList() {
-  const q = document.getElementById('receiptSearch').value.trim().toLowerCase();
-  const store = document.getElementById('receiptStoreFilter').value;
-  const year = document.getElementById('receiptYearFilter').value;
-  const sort = document.getElementById('receiptSort').value;
-
-  let list = allReceipts.filter(r => {
-    if (store !== 'ALL' && r.store !== store) return false;
-    if (year !== 'ALL' && !(r.date || '').startsWith(year)) return false;
-    if (q) {
-      const hay = `${r.store} ${r.date} ${r.orderId} ${r.payment} ${r.location} ${receiptNotes[r.id] || ''} ${(r.items || []).map(i => i.desc).join(' ')}`.toLowerCase();
-      if (!hay.includes(q)) return false;
+  function parseAmazon(fn, txt) {
+    const date = parseDate(fn, txt);
+    const orderId = (txt.match(/Order #\s*(\d{3}-\d{7}-\d{7})/i) || [])[1] || fn.replace(/\.pdf$/i,'');
+    const l4 = (txt.match(/(?:Visa|Mastercard|Amex|Discover|Card)[^\d\n]{0,15}(\d{4})/i) || [])[1];
+    const payment = l4 ? `Card ending in ${l4}` : (/Amazon Gift Card/i.test(txt) ? 'Amazon Gift Card' : 'Amazon Card');
+    const items = [];
+    const after = txt.split(/Grand Total:\s*\$[\d,.]+/i)[1] || txt;
+    const chunks = after.split(/Sold by:/i);
+    for (let i = 0; i < chunks.length - 1; i++) {
+      const title = chunks[i].trim().split('\n').pop().trim();
+      const pm = chunks[i+1].match(/\$([\d,.]+)/);
+      if (title && pm) {
+        const total = parseFloat(pm[1].replace(/,/g,''));
+        items.push({ desc: title, sku: '', qtyLabel: 'Qty 1', unitPrice: total, total, discount: 0, category: catItem(title, 'Amazon') });
+      }
     }
-    return true;
-  });
-
-  list.sort((a, b) => {
-    if (sort === 'date-desc') return (b.date || '').localeCompare(a.date || '');
-    if (sort === 'date-asc') return (a.date || '').localeCompare(b.date || '');
-    if (sort === 'total-desc') return (b.total || 0) - (a.total || 0);
-    if (sort === 'total-asc') return (a.total || 0) - (b.total || 0);
-    return 0;
-  });
-
-  document.getElementById('receiptsCountLabel').textContent = `Showing ${Math.min(receiptsRenderLimit, list.length)} of ${list.length} matching receipts`;
-  const slice = list.slice(0, receiptsRenderLimit);
-  const container = document.getElementById('receiptList');
-
-  if (!slice.length) {
-    container.innerHTML = '<div class="card" style="text-align:center;color:var(--text-muted);">No matching receipts found.</div>';
-    document.getElementById('loadMoreReceiptsBtn').style.display = 'none';
-    return;
+    const total = parseFloat(((txt.match(/Grand Total:\s*\$([\d,.]+)/i) || [])[1] || '0').replace(/,/g,'')) || items.reduce((s,i)=>s+i.total,0);
+    const subtotal = parseFloat(((txt.match(/Item\(s\) Subtotal:\s*\$([\d,.]+)/i) || [])[1] || total).toString().replace(/,/g,''));
+    const tax = parseFloat(((txt.match(/Estimated tax to be collected:\s*\$([\d,.]+)/i) || txt.match(/Tax:\s*\$([\d,.]+)/i) || [])[1] || '0').replace(/,/g,''));
+    return { id: fn, filename: fn, store: 'Amazon', date, orderId, location: 'Amazon.com', payment, subtotal, savings: 0, tax, total, items };
   }
 
-  container.innerHTML = slice.map(r => {
-    const note = receiptNotes[r.id];
-    const itemCount = (r.items || []).length;
-    return `
-      <div class="receipt-card" onclick="openReceiptModal('${r.id.replace(/'/g, "\'")}')">
-        <div class="receipt-top">
-          <div>
-            <span class="store-badge store-${r.store}">${r.store}</span>
-            <strong style="margin-left:6px;">${r.date}</strong>
-            <span style="font-size:0.8rem;color:var(--text-muted);margin-left:6px;">${r.orderType || ''}</span>
-            <div class="receipt-meta">
-              <span>📦 ${itemCount} item${itemCount === 1 ? '' : 's'}</span>
-              <span>💳 ${r.payment || 'Card'}</span>
-              <span># ${r.orderId}</span>
-            </div>
-            ${note ? `<div style="margin-top:5px;font-size:0.8rem;color:var(--primary);font-weight:600;">📝 ${note}</div>` : ''}
-          </div>
-          <div class="receipt-amount">
-            ${fmtMoney(r.total)}
-            ${r.savings > 0 ? `<div style="font-size:0.74rem;color:var(--accent);">Saved ${fmtMoney(r.savings)}</div>` : ''}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  function parseGeneric(fn, txt, store) {
+    const date = parseDate(fn, txt);
+    const total = parseFloat(((txt.match(/(?:Grand Total|TOTAL|Amount Charged|Order Total)\s*:?\s*\$?([\d,]+\.\d{2})/i) || [])[1] || '0').replace(/,/g,''));
+    const tax = parseFloat(((txt.match(/(?:Sales Tax|TAX|Estimated Tax)\s*:?\s*\$?([\d,]+\.\d{2})/i) || [])[1] || '0').replace(/,/g,''));
+    const l4 = (txt.match(/(?:Visa|Mastercard|Amex|Discover|Card|ending in|\*)\s*(\d{4})/i) || [])[1];
+    const payment = l4 ? `Card ending in ${l4}` : 'Card';
+    const items = [];
+    for (const line of txt.split('\n').map(l=>l.trim()).filter(Boolean)) {
+      if (/subtotal|tax|total|change|approved|visa|mastercard|amex|discover|payment|balance|savings/i.test(line)) continue;
+      const m = line.match(/^(.{4,65}?)\s+\$?([\d,]+\.\d{2})$/);
+      if (m) {
+        const p = parseFloat(m[2].replace(/,/g,''));
+        if (p > 0 && p <= total) items.push({ desc: m[1].trim(), sku: '', qtyLabel: 'Qty 1', unitPrice: p, total: p, discount: 0, category: catItem(m[1], store) });
+      }
+    }
+    if (!items.length && total > 0) {
+      items.push({ desc: `${storeLabel(store)} Purchase (${fn.replace(/\.pdf$/i,'')})`, sku: '', qtyLabel: 'Qty 1', unitPrice: +(total-tax).toFixed(2), total: +(total-tax).toFixed(2), discount: 0, category: catItem(fn, store) });
+    }
+    return { id: fn, filename: fn, store, date, orderId: fn.replace(/\.pdf$/i,''), location: storeLabel(store), payment, subtotal: +(total-tax).toFixed(2), savings: 0, tax, total, items };
+  }
 
-  const moreBtn = document.getElementById('loadMoreReceiptsBtn');
-  moreBtn.style.display = list.length > receiptsRenderLimit ? 'inline-block' : 'none';
-}
+  async function extractPdf(file) {
+    const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+    let out = '';
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const content = await (await pdf.getPage(p)).getTextContent();
+      let lastY = null, lines = [], cur = [];
+      for (const it of content.items) {
+        const y = Math.round(it.transform[5]);
+        if (lastY !== null && Math.abs(y - lastY) > 4) { lines.push(cur.join(' ')); cur = []; }
+        cur.push(it.str); lastY = y;
+      }
+      if (cur.length) lines.push(cur.join(' '));
+      out += lines.join('\n') + '\n';
+    }
+    return out;
+  }
 
-function renderItemsTable() {
-  const q = document.getElementById('itemSearch').value.trim().toLowerCase();
-  const cat = document.getElementById('itemCategoryFilter').value;
-  const store = document.getElementById('itemStoreFilter').value;
+  async function handleFiles(fileList) {
+    const pdfs = Array.from(fileList).filter(f => f.name.toLowerCase().endsWith('.pdf'));
+    if (!pdfs.length) return alert('No PDF files found.');
+    const ids = new Set(receipts.map(r => r.id));
+    const fps = new Set(receipts.map(r => `${r.store}|${r.date}|${(Number(r.total)||0).toFixed(2)}`));
+    const fresh = pdfs.filter(f => !ids.has(f.name));
 
-  const flat = [];
-  for (const r of allReceipts) {
-    if (store !== 'ALL' && r.store !== store) continue;
-    for (const it of (r.items || [])) {
-      const c = categorizeItem(it.desc, r.store);
-      if (cat !== 'ALL' && c !== cat) continue;
-      if (q && !`${it.desc} ${r.store} ${c}`.toLowerCase().includes(q)) continue;
-      flat.push({
-        receiptId: r.id,
-        date: r.date,
-        store: r.store,
-        desc: it.desc,
-        qtyLabel: it.qtyLabel || 'Qty 1',
-        unitPrice: it.unitPrice || it.total,
-        total: it.total,
-        category: c
+    const pw = document.getElementById('progWrap'), pt = document.getElementById('progText'), pp = document.getElementById('progPct'), pf = document.getElementById('progFill');
+    pw.style.display = 'block';
+    if (!fresh.length) { pt.textContent = `All ${pdfs.length} PDFs already indexed.`; pp.textContent = '100%'; pf.style.width = '100%'; return; }
+
+    let batch = [], added = 0, skipped = pdfs.length - fresh.length;
+    for (let i = 0; i < fresh.length; i++) {
+      const f = fresh[i], pct = Math.round(((i+1)/fresh.length)*100);
+      pt.textContent = `Scanning ${i+1} of ${fresh.length}: ${f.name}`; pp.textContent = `${pct}%`; pf.style.width = `${pct}%`;
+      try {
+        const txt = await extractPdf(f);
+        const st = detectStore(f.name, txt);
+        const rec = st === 'Sams' ? parseSams(f.name, txt) : st === 'Costco' ? parseCostco(f.name, txt) : st === 'Amazon' ? parseAmazon(f.name, txt) : parseGeneric(f.name, txt, st);
+        const fp = `${rec.store}|${rec.date}|${(Number(rec.total)||0).toFixed(2)}`;
+        if (fps.has(fp)) { skipped++; continue; }
+        fps.add(fp); batch.push(rec); added++;
+      } catch (e) { console.error(f.name, e); }
+      if (batch.length >= 100) await dbPutMany(batch.splice(0, batch.length));
+    }
+    if (batch.length) await dbPutMany(batch);
+    receipts = await dbGetAll();
+    pt.textContent = `Done! Added ${added} receipts (${skipped} duplicates skipped).`;
+    refreshAll();
+  }
+
+  async function loadSampleData() {
+    const samples = [
+      { id: '2026-11-26-Amazon-114.pdf', filename: '2026-11-26-Amazon-114.pdf', store: 'Amazon', date: '2026-11-26', orderId: '114-9823410-1122334', location: 'Amazon.com', payment: 'Card ending in 1059', subtotal: 44.99, savings: 0, tax: 3.71, total: 48.70, items: [
+        { desc: 'Amazon Fire TV Stick 4K Max (newest model), streaming device, with AI-powered Fire TV Search, supports Wi-Fi 6E, free & live TV without cable or satellite, find shows faster with Alexa+', sku: '', qtyLabel: 'Qty 1', unitPrice: 44.99, total: 44.99, discount: 0, category: 'Electronics & Tech' }
+      ]},
+      { id: '2026-11-25-Costco-Rx.pdf', filename: '2026-11-25-Costco-Rx.pdf', store: 'Costco', date: '2026-11-25', orderId: '2113300050092261125', location: 'WEBSTER #1330', payment: 'Card ending in 7293', subtotal: 30.00, savings: 0, tax: 0, total: 30.00, items: [
+        { desc: 'Pharmacy Prescription', sku: '920000', qtyLabel: 'Qty 1', unitPrice: 30.00, total: 30.00, discount: 0, category: 'Health & Personal Care' }
+      ]},
+      { id: '2026-11-22-Costco-Whse.pdf', filename: '2026-11-22-Costco-Whse.pdf', store: 'Costco', date: '2026-11-22', orderId: '2113300050092261122', location: 'WEBSTER #1330', payment: 'Card ending in 2707', subtotal: 131.19, savings: 5.50, tax: 2.15, total: 133.34, items: [
+        { desc: '40# WING', sku: '1906093', qtyLabel: 'Qty 1', unitPrice: 55.59, total: 55.59, discount: 0, category: 'Groceries & Meat' },
+        { desc: 'LAV GRAN CRE', sku: '375425', qtyLabel: 'Qty 1', unitPrice: 25.49, total: 19.99, discount: 5.50, category: 'Groceries & Meat' },
+        { desc: 'ANTHM HT HNY', sku: '2035643', qtyLabel: 'Qty 1', unitPrice: 14.97, total: 14.97, discount: 0, category: 'Groceries & Meat' },
+        { desc: "BRANCH'S CAN", sku: '1346367', qtyLabel: 'Qty 1', unitPrice: 13.99, total: 13.99, discount: 0, category: 'Groceries & Meat' },
+        { desc: 'RED GRAPES', sku: '5276', qtyLabel: 'Qty 1', unitPrice: 6.99, total: 6.99, discount: 0, category: 'Groceries & Meat' },
+        { desc: 'COD FILLET', sku: '47690', qtyLabel: 'Qty 1', unitPrice: 19.66, total: 19.66, discount: 0, category: 'Groceries & Meat' }
+      ]},
+      { id: '2022-03-20-Sams-538680.pdf', filename: '2022-03-20-Sams-538680.pdf', store: 'Sams', date: '2022-03-20', orderId: 'TC 4237 8760 6531 7725 3868 0', location: "Friendswood Sam's Club", payment: 'Card ending in 9282', subtotal: 500.96, savings: 0, tax: 33.00, total: 533.96, items: [
+        { desc: 'Georges Farmers Market Boneless and Skinless Chicken Breasts', sku: '', qtyLabel: '5.42 lb @ $2.88/lb', unitPrice: 2.88, total: 15.61, discount: 0, category: 'Groceries & Meat' },
+        { desc: "Member's Mark 99% Pure Chlorine Tablets, 40 lbs", sku: '', qtyLabel: 'Qty 2 @ $199.98', unitPrice: 199.98, total: 399.96, discount: 0, category: 'Pool & Patio' }
+      ]}
+    ];
+    await dbPutMany(samples);
+    receipts = await dbGetAll();
+    refreshAll();
+    setView('search');
+  }
+
+  // FIREBASE SYNC
+  function setSyncUI(state, label) {
+    document.getElementById('syncDot').className = 'dot' + (state === 'online' ? ' online' : state === 'syncing' ? ' syncing' : '');
+    document.getElementById('syncChipText').textContent = state === 'online' ? 'Synced' : '+ Import / Sync';
+    document.getElementById('fbBadge').textContent = label;
+  }
+
+  function initFirebase() {
+    const raw = localStorage.getItem(LS_CFG), room = localStorage.getItem(LS_ROOM) || 'armbruster-receipts-vault';
+    document.getElementById('fbRoom').value = room;
+    if (!raw) return;
+    document.getElementById('fbCfg').value = raw;
+    try {
+      const cfg = JSON.parse(raw);
+      if (!firebase.apps.length) firebase.initializeApp(cfg);
+      fbDb = firebase.firestore();
+      if (firebase.auth) firebase.auth().signInAnonymously().catch(()=>{});
+      setSyncUI('online', 'Cloud Synced');
+      if (fbUnsub) fbUnsub();
+      fbUnsub = fbDb.collection('goobs_receipts').doc(room).onSnapshot(snap => {
+        if (!snap.exists) return;
+        const d = snap.data();
+        if (d.catOverrides) { overrides = { ...overrides, ...d.catOverrides }; localStorage.setItem(LS_OVR, JSON.stringify(overrides)); }
+        if (d.receiptNotes) { notes = { ...notes, ...d.receiptNotes }; localStorage.setItem(LS_NOTE, JSON.stringify(notes)); }
+        refreshAll();
       });
+    } catch (e) { setSyncUI('offline', 'Config Error'); }
+  }
+
+  function connectFirebase() {
+    const raw = document.getElementById('fbCfg').value.trim(), room = document.getElementById('fbRoom').value.trim() || 'armbruster-receipts-vault';
+    if (!raw) return alert('Paste Firebase config JSON first.');
+    try {
+      JSON.parse(raw);
+      localStorage.setItem(LS_CFG, raw); localStorage.setItem(LS_ROOM, room);
+      initFirebase();
+      document.getElementById('fbMsg').textContent = `Connected to vault "${room}".`;
+    } catch (e) { alert('Invalid JSON.'); }
+  }
+
+  async function syncMetaCloud() {
+    if (!fbDb) return;
+    const room = localStorage.getItem(LS_ROOM) || 'armbruster-receipts-vault';
+    setSyncUI('syncing', 'Syncing...');
+    await fbDb.collection('goobs_receipts').doc(room).set({ catOverrides: overrides, receiptNotes: notes, updatedAt: new Date().toISOString() }, { merge: true });
+    setSyncUI('online', 'Cloud Synced');
+  }
+
+  async function pushAllCloud() {
+    if (!fbDb) return alert('Connect Firebase first.');
+    const room = localStorage.getItem(LS_ROOM) || 'armbruster-receipts-vault';
+    setSyncUI('syncing', 'Uploading...');
+    await syncMetaCloud();
+    const col = fbDb.collection('goobs_receipts').doc(room).collection('items');
+    let b = fbDb.batch(), c = 0;
+    for (const r of receipts) {
+      b.set(col.doc(r.id.replace(/[\/.#$\[\]]/g, '_')), r);
+      if (++c % 400 === 0) { await b.commit(); b = fbDb.batch(); }
     }
+    if (c % 400 !== 0) await b.commit();
+    document.getElementById('fbMsg').textContent = `Uploaded ${c} receipts to Firestore!`;
+    setSyncUI('online', 'Cloud Synced');
   }
 
-  flat.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-
-  // Price history banner when user searches a specific item
-  const histCard = document.getElementById('priceHistorySummaryCard');
-  if (q.length >= 3 && flat.length > 0) {
-    const prices = flat.map(x => x.unitPrice).filter(p => p > 0);
-    const minP = Math.min(...prices);
-    const maxP = Math.max(...prices);
-    const avgP = prices.reduce((s, p) => s + p, 0) / prices.length;
-    const totalSpent = flat.reduce((s, x) => s + x.total, 0);
-    histCard.style.display = 'block';
-    document.getElementById('priceHistoryTitle').textContent = `Price History for "${q}"`;
-    document.getElementById('priceHistoryStats').textContent = `${flat.length} purchases · ${fmtMoney(totalSpent)} total`;
-    document.getElementById('priceHistoryDetails').innerHTML = `
-      Lowest Unit Price: <strong style="color:var(--accent);">${fmtMoney(minP)}</strong> &nbsp;|&nbsp;
-      Highest: <strong style="color:var(--danger);">${fmtMoney(maxP)}</strong> &nbsp;|&nbsp;
-      Average: <strong>${fmtMoney(avgP)}</strong>
-    `;
-  } else {
-    histCard.style.display = 'none';
+  async function pullAllCloud() {
+    if (!fbDb) return alert('Connect Firebase first.');
+    const room = localStorage.getItem(LS_ROOM) || 'armbruster-receipts-vault';
+    setSyncUI('syncing', 'Downloading...');
+    const snap = await fbDb.collection('goobs_receipts').doc(room).collection('items').get();
+    const pulled = []; snap.forEach(d => pulled.push(d.data()));
+    if (pulled.length) { await dbPutMany(pulled); receipts = await dbGetAll(); refreshAll(); }
+    document.getElementById('fbMsg').textContent = `Pulled ${pulled.length} receipts from Firestore!`;
+    setSyncUI('online', 'Cloud Synced');
   }
 
-  const tbody = document.getElementById('itemsTableBody');
-  const slice = flat.slice(0, itemsRenderLimit);
-  tbody.innerHTML = slice.map(it => `
-    <tr style="cursor:pointer;" onclick="openReceiptModal('${it.receiptId.replace(/'/g, "\'")}')">
-      <td style="white-space:nowrap;">${it.date}</td>
-      <td><span class="store-badge store-${it.store}">${it.store}</span></td>
-      <td><strong>${it.desc}</strong></td>
-      <td style="white-space:nowrap;">${it.qtyLabel}</td>
-      <td>${fmtMoney(it.unitPrice)}</td>
-      <td><strong>${fmtMoney(it.total)}</strong></td>
-      <td><span class="cat-pill">${it.category}</span></td>
-    </tr>
-  `).join('');
+  // RENDERING
+  function buildPills() {
+    const base = ['Amazon', 'Costco', 'Sams'];
+    const extra = [...new Set(receipts.map(r => r.store).filter(s => s && !base.includes(s)))].sort();
+    const all = ['ALL', ...base, ...extra];
+    document.getElementById('storePills').innerHTML = all.map(s =>
+      `<button class="pill ${curStore === s ? 'active' : ''}" onclick="curStore='${s}';resetLimitsAndRender();buildPills();">${s === 'ALL' ? 'All' : storeLabel(s)}</button>`
+    ).join('');
+  }
 
-  document.getElementById('loadMoreItemsBtn').style.display = flat.length > itemsRenderLimit ? 'inline-block' : 'none';
-}
+  function fillDropdowns() {
+    const years = [...new Set(receipts.map(r => (r.date||'').slice(0,4)).filter(Boolean))].sort().reverse();
+    const yEl = document.getElementById('yearSelect'), py = yEl.value;
+    yEl.innerHTML = `<option value="ALL">All Years</option>` + years.map(y => `<option value="${y}">${y}</option>`).join('');
+    if (years.includes(py)) yEl.value = py;
 
-// ==========================================
-// 7. RECEIPT MODAL & CATEGORY OVERRIDES
-// ==========================================
-function openReceiptModal(id) {
-  const r = allReceipts.find(x => x.id === id);
-  if (!r) return;
-  activeModalReceiptId = id;
+    const cEl = document.getElementById('catSelect'), pc = cEl.value;
+    cEl.innerHTML = `<option value="ALL">All Categories</option>` + CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (CATEGORIES.includes(pc)) cEl.value = pc;
+  }
 
-  const badge = document.getElementById('modalStoreBadge');
-  badge.className = `store-badge store-${r.store}`;
-  badge.textContent = r.store;
-  document.getElementById('modalTitle').textContent = `${r.date} — ${fmtMoney(r.total)}`;
-  document.getElementById('modalSub').textContent = `${r.location || r.store} · Order #${r.orderId} · ${r.payment || 'Card'}`;
-  document.getElementById('modalNotesInput').value = receiptNotes[id] || '';
+  function resetLimitsAndRender() { itemsLimit = 60; receiptsLimit = 45; renderActiveView(); }
 
-  const tbody = document.getElementById('modalItemsBody');
-  tbody.innerHTML = (r.items || []).map((it, idx) => {
-    const curCat = categorizeItem(it.desc, r.store);
-    const opts = CATEGORIES.map(c => `<option value="${c}" ${c === curCat ? 'selected' : ''}>${c}</option>`).join('');
-    return `
-      <tr>
-        <td>${it.desc}</td>
+  function setView(v) {
+    curView = v;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+    document.querySelectorAll('.view').forEach(el => el.classList.toggle('active', el.id === `view-${v}`));
+    const titles = { search: 'Find a purchase', browse: 'Browse receipts', spending: 'Spending overview', matcher: 'Match statements', import: 'Import & sync' };
+    document.getElementById('heroTitle').textContent = titles[v] || 'Find a purchase';
+    document.getElementById('sharedFilters').style.display = (v === 'search' || v === 'browse') ? 'block' : 'none';
+    renderActiveView();
+  }
+
+  function renderActiveView() {
+    if (curView === 'search') renderSearch();
+    else if (curView === 'browse') renderBrowse();
+    else if (curView === 'spending') renderSpending();
+  }
+
+  function renderSearch() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const yr = document.getElementById('yearSelect').value;
+    const cat = document.getElementById('catSelect').value;
+    const sort = document.getElementById('sortSelect').value;
+
+    const recIds = new Set(), items = [];
+    for (const r of receipts) {
+      if (curStore !== 'ALL' && r.store !== curStore) continue;
+      if (yr !== 'ALL' && !(r.date||'').startsWith(yr)) continue;
+      for (const it of (r.items || [])) {
+        const c = catItem(it.desc, r.store);
+        if (cat !== 'ALL' && c !== cat) continue;
+        if (q && !`${it.desc} ${it.sku||''} ${r.store} ${storeLabel(r.store)} ${r.payment||''} ${r.orderId||''} ${c}`.toLowerCase().includes(q)) continue;
+        recIds.add(r.id);
+        items.push({ rid: r.id, store: r.store, date: r.date, pay: r.payment || 'Card', desc: it.desc, sku: it.sku || '', total: it.total, unit: it.unitPrice || it.total, disc: it.discount || 0 });
+      }
+    }
+
+    items.sort((a,b) => sort === 'date-desc' ? (b.date||'').localeCompare(a.date||'') : sort === 'date-asc' ? (a.date||'').localeCompare(b.date||'') : sort === 'price-desc' ? b.total - a.total : a.total - b.total);
+    document.getElementById('summaryLine').textContent = `${items.length.toLocaleString()} item${items.length===1?'':'s'} on ${recIds.size.toLocaleString()} receipt${recIds.size===1?'':'s'}`;
+
+    const pb = document.getElementById('priceBanner');
+    if (q.length >= 3 && items.length > 1) {
+      const ps = items.map(x => x.unit).filter(p => p > 0);
+      pb.classList.add('show');
+      document.getElementById('pbTitle').textContent = `Price history for "${q}"`;
+      document.getElementById('pbSub').textContent = `${items.length} purchases · ${fmtMoney(items.reduce((s,x)=>s+x.total,0))} total`;
+      document.getElementById('pbStats').innerHTML = `Low: <strong style="color:var(--accent);">${fmtMoney(Math.min(...ps))}</strong> · High: <strong style="color:var(--danger);">${fmtMoney(Math.max(...ps))}</strong> · Avg: <strong>${fmtMoney(ps.reduce((a,b)=>a+b,0)/ps.length)}</strong>`;
+    } else pb.classList.remove('show');
+
+    const grid = document.getElementById('itemsGrid');
+    const slice = items.slice(0, itemsLimit);
+    if (!slice.length) {
+      grid.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;padding:34px 20px;">
+        <h3 style="margin:0 0 6px;">${receipts.length ? 'No matching items found' : 'No receipts indexed yet'}</h3>
+        <p style="margin:0 0 14px;color:var(--text-muted);font-size:0.9rem;">${receipts.length ? 'Try a different search term or store filter.' : 'Scan your Google Drive receipt folders or load sample purchases to preview.'}</p>
+        ${receipts.length ? `<button class="btn" onclick="clearSearch()">Clear Search</button>` : `<button class="btn btn-dark" onclick="setView('import')">Scan Receipt Folders</button> <button class="btn" onclick="loadSampleData()">Load Sample Data</button>`}
+      </div>`;
+      document.getElementById('moreItemsBtn').style.display = 'none';
+      return;
+    }
+
+    grid.innerHTML = slice.map(it => `
+      <article class="card">
+        <div>
+          <div class="card-top-meta">
+            <span class="store-badge st-${it.store}">${storeLabel(it.store)}</span>
+            <span>Purchased &middot; ${fmtDate(it.date)}</span>
+          </div>
+          <h3 class="card-item-title">${it.desc}</h3>
+          <div class="card-sku">${it.sku ? `SKU ${it.sku}` : 'SKU unavailable'}</div>
+        </div>
+        <div class="card-footer">
+          <div class="card-price">${fmtMoney(it.total)}</div>
+          ${it.disc > 0 ? `<div class="card-discount">${fmtMoney(it.disc)} receipt discount</div>` : ''}
+          <div class="card-pay">${it.pay}</div>
+          <button class="card-link" onclick="openModal('${it.rid.replace(/'/g,"\\'")}')">View full receipt &rarr;</button>
+        </div>
+      </article>
+    `).join('');
+    document.getElementById('moreItemsBtn').style.display = items.length > itemsLimit ? 'inline-flex' : 'none';
+  }
+
+  function renderBrowse() {
+    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const yr = document.getElementById('yearSelect').value;
+    const cat = document.getElementById('catSelect').value;
+    const sort = document.getElementById('sortSelect').value;
+
+    let itemTotal = 0;
+    const list = receipts.filter(r => {
+      if (curStore !== 'ALL' && r.store !== curStore) return false;
+      if (yr !== 'ALL' && !(r.date||'').startsWith(yr)) return false;
+      if (cat !== 'ALL' && !(r.items||[]).some(i => catItem(i.desc, r.store) === cat)) return false;
+      if (q && !`${r.store} ${storeLabel(r.store)} ${r.date} ${r.orderId} ${r.payment} ${r.location} ${notes[r.id]||''} ${(r.items||[]).map(i=>`${i.desc} ${i.sku||''}`).join(' ')}`.toLowerCase().includes(q)) return false;
+      itemTotal += (r.items || []).length;
+      return true;
+    });
+
+    list.sort((a,b) => sort === 'date-desc' ? (b.date||'').localeCompare(a.date||'') : sort === 'date-asc' ? (a.date||'').localeCompare(b.date||'') : sort === 'price-desc' ? b.total - a.total : a.total - b.total);
+    document.getElementById('summaryLine').textContent = `${itemTotal.toLocaleString()} item${itemTotal===1?'':'s'} on ${list.length.toLocaleString()} receipt${list.length===1?'':'s'}`;
+
+    const grid = document.getElementById('receiptsGrid');
+    const slice = list.slice(0, receiptsLimit);
+    grid.innerHTML = slice.map(r => {
+      const its = r.items || [];
+      const prev = its.slice(0, 3).map(i => `<div style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">&bull; ${i.desc}</div>`).join('');
+      return `
+        <article class="card" style="cursor:pointer;" onclick="openModal('${r.id.replace(/'/g,"\\'")}')">
+          <div>
+            <div class="card-top-meta">
+              <span class="store-badge st-${r.store}">${storeLabel(r.store)}</span>
+              <span>Purchased &middot; ${fmtDate(r.date)}</span>
+            </div>
+            <h3 class="card-item-title">${r.location || storeLabel(r.store)}</h3>
+            <div class="card-sku">Order # ${r.orderId} &middot; ${its.length} items</div>
+            <div style="margin-bottom:14px;">${prev}${its.length > 3 ? `<div style="font-size:0.8rem;color:var(--accent);font-weight:500;">+ ${its.length - 3} more items</div>` : ''}</div>
+          </div>
+          <div class="card-footer">
+            <div class="card-price">${fmtMoney(r.total)}</div>
+            ${r.savings > 0 ? `<div class="card-discount">${fmtMoney(r.savings)} receipt discount</div>` : ''}
+            <div class="card-pay">${r.payment || 'Card'}</div>
+            <span class="card-link">View full receipt &rarr;</span>
+          </div>
+        </article>
+      `;
+    }).join('');
+    document.getElementById('moreReceiptsBtn').style.display = list.length > receiptsLimit ? 'inline-flex' : 'none';
+  }
+
+  function renderBars(id, entries) {
+    const el = document.getElementById(id);
+    if (!entries.length) { el.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;">No data yet.</div>'; return; }
+    const max = Math.max(...entries.map(e => e[1]), 1);
+    el.innerHTML = entries.map(([k, v]) => `
+      <div class="bar-row">
+        <div class="bar-head"><span>${k}</span><strong>${fmtMoney(v)}</strong></div>
+        <div class="bar-bg"><div class="bar-fg" style="width:${Math.max(2, Math.round((v/max)*100))}%;"></div></div>
+      </div>
+    `).join('');
+  }
+
+  function renderSpending() {
+    const spend = receipts.reduce((s,r)=>s+(r.total||0),0);
+    const sav = receipts.reduce((s,r)=>s+(r.savings||0),0);
+    const tax = receipts.reduce((s,r)=>s+(r.tax||0),0);
+    const cnt = receipts.reduce((s,r)=>s+(r.items?r.items.length:0),0);
+    document.getElementById('kpiSpend').textContent = fmtMoney(spend);
+    document.getElementById('kpiRecs').textContent = `${receipts.length.toLocaleString()} receipts`;
+    document.getElementById('kpiItems').textContent = cnt.toLocaleString();
+    document.getElementById('kpiAvg').textContent = `${fmtMoney(receipts.length ? spend/receipts.length : 0)} avg receipt`;
+    document.getElementById('kpiSav').textContent = fmtMoney(sav);
+    document.getElementById('kpiTax').textContent = fmtMoney(tax);
+    document.getElementById('kpiTaxRate').textContent = `${spend > tax ? ((tax/(spend-tax))*100).toFixed(1) : '0.0'}% effective rate`;
+
+    const cats = {}, stores = {}, cards = {}, months = {};
+    for (const r of receipts) {
+      const sl = storeLabel(r.store);
+      stores[sl] = (stores[sl]||0) + (r.total||0);
+      cards[r.payment||'Card'] = (cards[r.payment||'Card']||0) + (r.total||0);
+      const ym = (r.date||'2026-01').slice(0,7);
+      months[ym] = (months[ym]||0) + (r.total||0);
+      for (const it of (r.items||[])) {
+        const c = catItem(it.desc, r.store);
+        cats[c] = (cats[c]||0) + (it.total||0);
+      }
+    }
+    renderBars('catBars', Object.entries(cats).sort((a,b)=>b[1]-a[1]));
+    renderBars('storeBars', Object.entries(stores).sort((a,b)=>b[1]-a[1]));
+    renderBars('cardBars', Object.entries(cards).sort((a,b)=>b[1]-a[1]).slice(0,6));
+    renderBars('monthBars', Object.entries(months).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,12));
+  }
+
+  function openModal(id) {
+    const r = receipts.find(x => x.id === id);
+    if (!r) return;
+    modalId = id;
+    const tag = document.getElementById('mStore');
+    tag.className = `store-badge st-${r.store}`;
+    tag.textContent = storeLabel(r.store);
+    document.getElementById('mTitle').textContent = `${fmtDate(r.date)} — ${fmtMoney(r.total)}`;
+    document.getElementById('mSub').textContent = `${r.location} · Order #${r.orderId} · ${r.payment}`;
+    document.getElementById('mNoteInput').value = notes[id] || '';
+    document.getElementById('mItems').innerHTML = (r.items||[]).map(it => {
+      const cur = catItem(it.desc, r.store);
+      const opts = CATEGORIES.map(c => `<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
+      return `<tr>
+        <td><strong>${it.desc}</strong>${it.sku ? `<div style="font-size:0.75rem;color:var(--text-muted);">SKU ${it.sku}</div>` : ''}</td>
         <td style="white-space:nowrap;">${it.qtyLabel || 'Qty 1'}</td>
         <td><strong>${fmtMoney(it.total)}</strong></td>
-        <td>
-          <select class="btn btn-sm" onchange="overrideItemCategory('${it.desc.replace(/'/g, "\'")}', this.value)">
-            ${opts}
-          </select>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  document.getElementById('modalTotals').innerHTML = `
-    Subtotal: <strong>${fmtMoney(r.subtotal)}</strong> &nbsp;|&nbsp;
-    Savings: <strong style="color:var(--accent);">-${fmtMoney(r.savings)}</strong> &nbsp;|&nbsp;
-    Tax: <strong>${fmtMoney(r.tax)}</strong> &nbsp;|&nbsp;
-    Total: <strong style="font-size:1.05rem;">${fmtMoney(r.total)}</strong>
-  `;
-
-  document.getElementById('receiptModal').classList.add('open');
-}
-
-function closeReceiptModal() {
-  document.getElementById('receiptModal').classList.remove('open');
-  activeModalReceiptId = null;
-}
-
-function overrideItemCategory(desc, newCat) {
-  const key = normalizeItemKey(desc);
-  catOverrides[key] = newCat;
-  localStorage.setItem(LS_OVERRIDES, JSON.stringify(catOverrides));
-  reapplyCategoryOverrides();
-  refreshAllViews();
-  syncMetadataToFirebase();
-}
-
-function saveModalNote() {
-  if (!activeModalReceiptId) return;
-  const val = document.getElementById('modalNotesInput').value.trim();
-  if (val) receiptNotes[activeModalReceiptId] = val;
-  else delete receiptNotes[activeModalReceiptId];
-  localStorage.setItem(LS_NOTES, JSON.stringify(receiptNotes));
-  renderReceiptsList();
-  syncMetadataToFirebase();
-}
-
-// ==========================================
-// 8. BANK / CREDIT CARD CSV STATEMENT MATCHER
-// ==========================================
-function parseCsvLine(line) {
-  const res = [];
-  let cur = '', inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') inQ = !inQ;
-    else if (ch === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
-    else cur += ch;
+        <td><select class="pill-select" onchange="setOverride('${it.desc.replace(/'/g,"\\'")}', this.value)">${opts}</select></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('mTotals').innerHTML = `Subtotal: <strong>${fmtMoney(r.subtotal)}</strong> &middot; Savings: <strong style="color:var(--accent);">-${fmtMoney(r.savings)}</strong> &middot; Tax: <strong>${fmtMoney(r.tax)}</strong> &middot; Total: <strong style="font-size:1.05rem;">${fmtMoney(r.total)}</strong>`;
+    document.getElementById('modalBg').classList.add('open');
   }
-  res.push(cur.trim());
-  return res;
-}
 
-function normalizeDateStr(s) {
-  // Handle MM/DD/YYYY or YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if (m) {
-    const yr = m[3].length === 2 ? '20' + m[3] : m[3];
-    return `${yr}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  function closeModal() { document.getElementById('modalBg').classList.remove('open'); modalId = null; }
+  function setOverride(desc, cat) { overrides[normKey(desc)] = cat; localStorage.setItem(LS_OVR, JSON.stringify(overrides)); refreshAll(); syncMetaCloud(); }
+  function saveNote() {
+    if (!modalId) return;
+    const v = document.getElementById('mNoteInput').value.trim();
+    if (v) notes[modalId] = v; else delete notes[modalId];
+    localStorage.setItem(LS_NOTE, JSON.stringify(notes));
+    renderActiveView(); syncMetaCloud();
   }
-  return s;
-}
 
-function daysBetween(d1, d2) {
-  const t1 = Date.parse(d1);
-  const t2 = Date.parse(d2);
-  if (isNaN(t1) || isNaN(t2)) return 999;
-  return Math.abs(t1 - t2) / (1000 * 60 * 60 * 24);
-}
+  function clearSearch() {
+    const i = document.getElementById('searchInput');
+    i.value = ''; document.getElementById('clearBtn').classList.remove('show');
+    resetLimitsAndRender(); i.focus();
+  }
 
-document.getElementById('csvFileInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const text = await file.text();
-  const lines = text.split(/?
-/).filter(l => l.trim());
-  if (lines.length < 2) return;
-
-  const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase());
-  const dateIdx = headers.findIndex(h => h.includes('date'));
-  const descIdx = headers.findIndex(h => h.includes('desc') || h.includes('merchant') || h.includes('payee'));
-  const amtIdx = headers.findIndex(h => h.includes('amount') || h.includes('debit'));
-
-  let matchedCount = 0;
-  let missingCount = 0;
-  const rowsHtml = [];
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = parseCsvLine(lines[i]);
-    if (cols.length <= Math.max(dateIdx, descIdx, amtIdx)) continue;
-    const rawDate = normalizeDateStr(cols[dateIdx >= 0 ? dateIdx : 0]);
-    const desc = cols[descIdx >= 0 ? descIdx : 1];
-    const amt = Math.abs(parseFloat((cols[amtIdx >= 0 ? amtIdx : 2] || '0').replace(/[$,]/g, '')));
-    if (!amt || isNaN(amt)) continue;
-
-    // Find receipt within +/- 4 days and +/- $0.05
-    const match = allReceipts.find(r =>
-      Math.abs((r.total || 0) - amt) <= 0.05 && daysBetween(r.date, rawDate) <= 4
-    );
-
-    if (match) matchedCount++;
-    else missingCount++;
-
-    rowsHtml.push(`
-      <tr>
-        <td>${match
-          ? '<span class="cat-pill" style="background:var(--accent-soft);color:var(--accent);">✓ Matched</span>'
-          : '<span class="cat-pill" style="background:var(--warn-soft);color:var(--warn);">Missing</span>'}</td>
-        <td style="white-space:nowrap;">${rawDate}</td>
-        <td>${desc}</td>
+  // CSV MATCHER
+  document.getElementById('csvInput').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const lines = (await f.text()).split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return;
+    const parseLine = l => { const a=[]; let c='', q=false; for (const ch of l) { if (ch==='"') q=!q; else if (ch===','&&!q){a.push(c.trim());c='';} else c+=ch; } a.push(c.trim()); return a; };
+    const hdr = parseLine(lines[0]).map(h => h.toLowerCase());
+    const di = hdr.findIndex(h => h.includes('date')), si = hdr.findIndex(h => h.includes('desc')||h.includes('merchant')), ai = hdr.findIndex(h => h.includes('amount')||h.includes('debit'));
+    let ok = 0, miss = 0, html = '';
+    for (let i = 1; i < lines.length; i++) {
+      const cols = parseLine(lines[i]);
+      const dRaw = cols[di>=0?di:0] || '';
+      const m = dRaw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      const dt = m ? `${m[3].length===2?'20'+m[3]:m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}` : dRaw;
+      const amt = Math.abs(parseFloat((cols[ai>=0?ai:2]||'0').replace(/[$,]/g,'')));
+      if (!amt || isNaN(amt)) continue;
+      const match = receipts.find(r => Math.abs((r.total||0)-amt) <= 0.05 && Math.abs(Date.parse(r.date)-Date.parse(dt))/86400000 <= 4);
+      if (match) ok++; else miss++;
+      html += `<tr>
+        <td>${match ? '<span class="store-badge st-Costco">Matched</span>' : '<span class="store-badge st-Amazon">Missing</span>'}</td>
+        <td style="white-space:nowrap;">${fmtDate(dt)}</td>
+        <td>${cols[si>=0?si:1]||''}</td>
         <td><strong>${fmtMoney(amt)}</strong></td>
-        <td>${match
-          ? `<a href="#" onclick="openReceiptModal('${match.id.replace(/'/g, "\'")}');return false;">${match.store} (${match.date})</a>`
-          : '<span style="color:var(--text-muted);">No matching receipt</span>'}</td>
-      </tr>
-    `);
+        <td>${match ? `<a href="#" style="color:var(--hero-bg);font-weight:600;" onclick="openModal('${match.id.replace(/'/g,"\\'")}');return false;">${storeLabel(match.store)} &middot; ${fmtDate(match.date)}</a>` : '<span style="color:var(--text-muted);">No matching receipt</span>'}</td>
+      </tr>`;
+    }
+    document.getElementById('matchWrap').style.display = 'block';
+    document.getElementById('mTotal').textContent = ok + miss;
+    document.getElementById('mFound').textContent = ok;
+    document.getElementById('mMiss').textContent = miss;
+    document.getElementById('mBody').innerHTML = html;
+  });
+
+  function exportJSON() {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ receipts, overrides, notes }, null, 2)], { type: 'application/json' }));
+    a.download = `receipt-tracker-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
   }
 
-  document.getElementById('matcherResults').style.display = 'block';
-  document.getElementById('matchTotalRows').textContent = matchedCount + missingCount;
-  document.getElementById('matchFoundCount').textContent = matchedCount;
-  document.getElementById('matchMissingCount').textContent = missingCount;
-  document.getElementById('matcherTableBody').innerHTML = rowsHtml.join('');
-});
+  document.getElementById('jsonInput').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const d = JSON.parse(await f.text());
+    if (Array.isArray(d.receipts)) { await dbPutMany(d.receipts); receipts = await dbGetAll(); }
+    if (d.overrides) { overrides = { ...overrides, ...d.overrides }; localStorage.setItem(LS_OVR, JSON.stringify(overrides)); }
+    if (d.notes) { notes = { ...notes, ...d.notes }; localStorage.setItem(LS_NOTE, JSON.stringify(notes)); }
+    refreshAll();
+  });
 
-// ==========================================
-// 9. EXPORT / IMPORT / NAVIGATION / INIT
-// ==========================================
-function exportDatabaseJSON() {
-  const payload = {
-    exportedAt: new Date().toISOString(),
-    receipts: allReceipts,
-    catOverrides,
-    receiptNotes
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `goobs-receipts-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-}
-
-document.getElementById('importJsonInput').addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  try {
-    const data = JSON.parse(await file.text());
-    if (Array.isArray(data.receipts)) {
-      await idbPutMany(data.receipts);
-      allReceipts = await idbGetAll();
-    }
-    if (data.catOverrides) {
-      catOverrides = { ...catOverrides, ...data.catOverrides };
-      localStorage.setItem(LS_OVERRIDES, JSON.stringify(catOverrides));
-    }
-    if (data.receiptNotes) {
-      receiptNotes = { ...receiptNotes, ...data.receiptNotes };
-      localStorage.setItem(LS_NOTES, JSON.stringify(receiptNotes));
-    }
-    refreshAllViews();
-    alert(`Imported ${data.receipts ? data.receipts.length : 0} receipts successfully!`);
-  } catch (err) {
-    alert('Failed to import JSON: ' + err.message);
+  async function clearLocalDB() {
+    if (!confirm('Clear local receipt cache?')) return;
+    await dbClear(); receipts = []; refreshAll();
   }
-});
 
-async function clearAllData() {
-  if (!confirm('Clear all locally cached receipts from this browser? (Cloud data in Firebase is untouched.)')) return;
-  await idbClear();
-  allReceipts = [];
-  refreshAllViews();
-}
+  function refreshAll() { buildPills(); fillDropdowns(); renderActiveView(); }
 
-function switchTab(tabName) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`tab-${tabName}`).classList.add('active');
-  document.querySelector(`.nav-btn[data-tab="${tabName}"]`).classList.add('active');
-}
+  document.getElementById('searchInput').addEventListener('input', e => {
+    document.getElementById('clearBtn').classList.toggle('show', e.target.value.length > 0);
+    resetLimitsAndRender();
+  });
+  document.getElementById('folderInput').addEventListener('change', e => handleFiles(e.target.files));
+  document.getElementById('filesInput').addEventListener('change', e => handleFiles(e.target.files));
 
-function applyTheme(theme) {
-  if (theme === 'daylight') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem(LS_THEME, theme);
-  document.getElementById('themeSelector').value = theme;
-}
-
-function refreshAllViews() {
-  document.getElementById('headerSubtitle').textContent = `${allReceipts.length.toLocaleString()} Receipts Indexed`;
-  populateFilterDropdowns();
-  renderDashboard();
-  renderReceiptsList();
-  renderItemsTable();
-}
-
-// Event Listeners
-document.getElementById('themeSelector').addEventListener('change', e => applyTheme(e.target.value));
-document.getElementById('folderInput').addEventListener('change', e => handlePdfFiles(e.target.files));
-document.getElementById('multiPdfInput').addEventListener('change', e => handlePdfFiles(e.target.files));
-
-['dashYearFilter', 'dashStoreFilter', 'dashCardFilter'].forEach(id => {
-  document.getElementById(id).addEventListener('change', renderDashboard);
-});
-
-['receiptSearch', 'receiptStoreFilter', 'receiptYearFilter', 'receiptSort'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => { receiptsRenderLimit = 50; renderReceiptsList(); });
-  document.getElementById(id).addEventListener('change', () => { receiptsRenderLimit = 50; renderReceiptsList(); });
-});
-
-['itemSearch', 'itemCategoryFilter', 'itemStoreFilter'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => { itemsRenderLimit = 80; renderItemsTable(); });
-  document.getElementById(id).addEventListener('change', () => { itemsRenderLimit = 80; renderItemsTable(); });
-});
-
-document.getElementById('loadMoreReceiptsBtn').addEventListener('click', () => {
-  receiptsRenderLimit += 50;
-  renderReceiptsList();
-});
-document.getElementById('loadMoreItemsBtn').addEventListener('click', () => {
-  itemsRenderLimit += 80;
-  renderItemsTable();
-});
-
-// Boot
-(async function init() {
-  applyTheme(localStorage.getItem(LS_THEME) || 'daylight');
-  await openIDB();
-  allReceipts = await idbGetAll();
-  refreshAllViews();
-  initFirebaseFromStorage();
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
-})();
-</script>
+  (async function boot() {
+    document.getElementById('monthDisplay').textContent = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    await openDB();
+    receipts = await dbGetAll();
+    refreshAll();
+    initFirebase();
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  })();
+  </script>
 </body>
 </html>

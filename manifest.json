@@ -1,13 +1,13 @@
 {
-  "name": "Goobs Receipts",
+  "name": "Receipt Tracker",
   "short_name": "Receipts",
-  "description": "Itemized receipt vault, spending analytics, and statement matcher for Glenn & Cindy.",
+  "description": "Find a purchase, browse receipts, track spending, and match statements.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
+  "orientation": "any",
+  "background_color": "#f6f5ef",
+  "theme_color": "#0d2b24",
   "icons": [
     {
       "src": "./icon-192.png",
